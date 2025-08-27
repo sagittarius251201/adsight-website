@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>adSight - AI-Powered Business Insights</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .gradient-text { background: linear-gradient(90deg, #4F46E5, #A855F7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .dark .dark\:gradient-text { background: linear-gradient(90deg, #818CF8, #C4B5FD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-bg { background-color: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .dark .dark\:card-bg { background-color: rgba(17, 24, 39, 0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glow { box-shadow: 0 0 15px rgba(79, 70, 229, 0.5), 0 0 30px rgba(168, 85, 247, 0.4); }
+        .hero-glow { background-image: radial-gradient(ellipse 80% 80% at 50% -20%,rgba(124,58,237,0.3),hsla(0,0%,100%,0)); }
+        .dark .dark\:hero-glow { background-image: radial-gradient(ellipse 80% 80% at 50% -20%,rgba(124,58,237,0.3),rgba(255,255,255,0)); }
+        [x-cloak] { display: none !important; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin 3s linear infinite; }
+        
+        .prose-styles h1, .prose-styles h2, .prose-styles h3 { @apply font-bold mb-4 text-gray-900 dark:text-gray-100; }
+        .prose-styles h1 { @apply text-2xl; } .prose-styles h2 { @apply text-xl; } .prose-styles h3 { @apply text-lg; }
+        .prose-styles p { @apply mb-4 leading-relaxed; } .prose-styles ul { @apply list-disc list-inside mb-4 pl-4; }
+        .prose-styles li { @apply mb-2; } .prose-styles strong { @apply font-semibold text-indigo-500 dark:text-indigo-400; }
+        
+        .nav-link { @apply text-gray-600 dark:text-gray-300 hover:text-indigo-500 dark:hover:text-indigo-400 transition relative py-1; }
+        .nav-link-active { @apply text-indigo-600 dark:text-indigo-400 font-semibold; }
+        .nav-link-active::after { content: ''; @apply absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500; }
+
+        @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .insight-item { animation: fadeInRight 0.5s ease-out forwards; }
+        
+        #globe-container { cursor: grab; }
+        #globe-container:grabbing { cursor: grabbing; }
+
+        /* Input range slider custom styles */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { @apply w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer; }
+        input[type=range]::-webkit-slider-thumb { @apply w-5 h-5 bg-indigo-600 rounded-full -mt-1.5 border-2 border-white dark:border-gray-900; -webkit-appearance: none; }
+        input[type=range]::-moz-range-track { @apply w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer; }
+        input[type=range]::-moz-range-thumb { @apply w-5 h-5 bg-indigo-600 rounded-full border-2 border-white dark:border-gray-900; }
+
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-500">
+
+    <div id="app" x-data="adSightApp" x-cloak>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 card-bg dark:dark:card-bg border-b border-gray-200/10 dark:border-gray-700/20">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="#" @click.prevent="switchPage('home')" class="flex items-center space-x-4 cursor-pointer">
+                <img src="https://i.ibb.co/mHwz79M/image-7c8fdb.jpg" alt="adSight Logo" class="h-10 w-10 rounded-full border-2 border-indigo-500/50">
+                <span class="text-2xl font-bold gradient-text dark:dark:gradient-text">adSight</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#" @click.prevent="switchPage('solutions')" class="nav-link" :class="{'nav-link-active': activePage === 'solutions'}">Solutions</a>
+                <a href="#" @click.prevent="switchPage('gaio')" class="nav-link" :class="{'nav-link-active': activePage === 'gaio'}">GAIO Modeler</a>
+                <a href="#" @click.prevent="switchPage('clients')" class="nav-link" :class="{'nav-link-active': activePage === 'clients'}">Clients</a>
+                <a href="#" @click.prevent="switchPage('products')" class="nav-link" :class="{'nav-link-active': activePage === 'products'}">Pricing</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button @click="switchPage('login')" class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition">
+                    Login
+                </button>
+                <button @click="showSignupModal = true" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition glow">
+                    Get Started
+                </button>
+                <div class="flex items-center">
+                    <span class="mr-2 text-sm text-gray-600 dark:text-gray-400"><i data-lucide="sun" class="w-5 h-5"></i></span>
+                    <label for="dark-mode-toggle" class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="dark-mode-toggle" class="sr-only peer" x-model="darkMode">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400"><i data-lucide="moon" class="w-5 h-5"></i></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="pt-24 container mx-auto px-6 min-h-screen">
+        
+        <!-- PAGE: Home -->
+        <div x-show="activePage === 'home'" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+            <section class="grid md:grid-cols-2 gap-8 items-center py-20">
+                <div class="text-center md:text-left">
+                    <h1 class="text-5xl md:text-7xl font-extrabold mb-4">Ask any business question. <br> Get <span class="gradient-text dark:dark:gradient-text">instant answers.</span></h1>
+                    <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto md:mx-0 mb-8">adSight is your AI-powered research analyst. Get comprehensive, data-driven insights on markets, competitors, and trends in seconds.</p>
+                    <form @submit.prevent="getAnswer" class="max-w-2xl mx-auto md:mx-0">
+                        <div class="relative"><input type="text" x-model="query" placeholder="e.g., Market trends for sustainable packaging?" class="w-full pl-5 pr-32 py-4 text-lg rounded-full bg-white dark:bg-gray-800/80 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"><button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2.5 font-semibold text-white bg-indigo-600 rounded-full hover:bg-indigo-700 transition glow">Get Answers</button></div>
+                    </form>
+                </div>
+                <div id="globe-container" class="h-96 w-full"></div>
+            </section>
+            <section id="answer-section" class="py-10 min-h-[300px]">
+                <div x-show="isLoading" class="flex flex-col items-center justify-center text-center">
+                    <div class="relative w-24 h-24"><div class="absolute inset-0 border-4 border-indigo-200 dark:border-indigo-800 rounded-full"></div><div class="absolute inset-0 border-t-4 border-indigo-500 rounded-full animate-spin"></div></div>
+                    <p class="mt-4 text-lg font-semibold text-gray-700 dark:text-gray-300">adSight is thinking...</p><p class="text-gray-500 dark:text-gray-400">Analyzing data and generating your report.</p>
+                </div>
+                <div x-show="error" class="text-center p-8 rounded-lg bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-500/50"><i data-lucide="alert-triangle" class="w-12 h-12 mx-auto text-red-500"></i><h3 class="mt-2 text-xl font-bold text-red-800 dark:text-red-300">Oops! Something went wrong.</h3><p class="mt-1 text-red-600 dark:text-red-400" x-text="error"></p></div>
+                <div x-show="answer" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="p-8 rounded-2xl card-bg dark:dark:card-bg prose-styles max-w-4xl mx-auto"><h2 class="text-2xl font-bold mb-4 border-b pb-2 border-gray-300 dark:border-gray-700">Insight Report for: <span class="gradient-text dark:dark:gradient-text" x-text="originalQuery"></span></h2><div x-html="formattedAnswer"></div></div>
+                <div x-show="!isLoading && !answer && !error" class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+                    <div class="p-6 rounded-2xl card-bg dark:dark:card-bg">
+                        <h3 class="font-bold text-lg mb-4">Real-time Market Insights</h3>
+                        <div class="space-y-3 h-64 overflow-y-auto">
+                            <template x-for="insight in insights" :key="insight.id">
+                                <div class="p-3 bg-gray-100 dark:bg-gray-800/50 rounded-lg insight-item">
+                                    <p class="text-sm font-semibold" x-text="insight.text"></p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400" x-text="insight.source"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-2xl card-bg dark:dark:card-bg">
+                        <h3 class="font-bold text-lg mb-4">Example Questions to Ask</h3>
+                        <ul class="space-y-2">
+                           <li @click="query = 'Analyze the competitive landscape for electric vehicles in North America.'; getAnswer()" class="cursor-pointer p-2 rounded hover:bg-indigo-100 dark:hover:bg-indigo-900/50">Analyze the competitive landscape for electric vehicles in North America.</li>
+                           <li @click="query = 'What are the key growth drivers for the global SaaS market?'; getAnswer()" class="cursor-pointer p-2 rounded hover:bg-indigo-100 dark:hover:bg-indigo-900/50">What are the key growth drivers for the global SaaS market?</li>
+                           <li @click="query = 'Summarize recent consumer trends in the direct-to-consumer coffee industry.'; getAnswer()" class="cursor-pointer p-2 rounded hover:bg-indigo-100 dark:hover:bg-indigo-900/50">Summarize recent consumer trends in the direct-to-consumer coffee industry.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE: Solutions -->
+        <div x-show="activePage === 'solutions'" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+            <section class="py-20">
+                <div class="text-center max-w-4xl mx-auto">
+                    <h1 class="text-5xl md:text-6xl font-extrabold mb-4">The Complete <span class="gradient-text dark:dark:gradient-text">GAIO Platform</span></h1>
+                    <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400">From monitoring and analytics to conversation and commerce, adSight provides the tools you need to win in the new era of AI-driven search.</p>
+                </div>
+                <div class="mt-16 max-w-5xl mx-auto">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Solution 1 -->
+                        <div class="p-8 rounded-2xl card-bg dark:dark:card-bg space-y-4">
+                            <i data-lucide="bar-chart-2" class="w-10 h-10 text-indigo-400"></i>
+                            <h3 class="text-2xl font-bold">Answer Engine Insights</h3>
+                            <p class="text-gray-500 dark:text-gray-400">Monitor how AI talks about you. See how often your brand appears in AI answers, understand the context, and find out which websites drive the AI's responses about you.</p>
+                        </div>
+                        <!-- Solution 2 -->
+                        <div class="p-8 rounded-2xl card-bg dark:dark:card-bg space-y-4">
+                            <i data-lucide="mouse-pointer-2" class="w-10 h-10 text-indigo-400"></i>
+                            <h3 class="text-2xl font-bold">Agent Analytics</h3>
+                            <p class="text-gray-500 dark:text-gray-400">See how AI uses your website. Track when, how often, and which AI bots access your content, and measure how many human visitors convert from AI-driven search.</p>
+                        </div>
+                        <!-- Solution 3 -->
+                        <div class="p-8 rounded-2xl card-bg dark:dark:card-bg space-y-4">
+                            <i data-lucide="message-circle" class="w-10 h-10 text-indigo-400"></i>
+                            <h3 class="text-2xl font-bold">Conversation Explorer</h3>
+                            <p class="text-gray-500 dark:text-gray-400">Discover what millions of people ask AI. Find relevant keywords and topics across AI conversations in seconds to become more visible in AI answers.</p>
+                        </div>
+                        <!-- Solution 4 -->
+                        <div class="p-8 rounded-2xl card-bg dark:dark:card-bg space-y-4">
+                            <i data-lucide="shopping-cart" class="w-10 h-10 text-indigo-400"></i>
+                            <h3 class="text-2xl font-bold">Shopping Intelligence</h3>
+                            <p class="text-gray-500 dark:text-gray-400">Track product placement in AI. Increase your reach by optimizing how your products appear in AI Shopping, and analyze your product's performance.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE: Generative AI Optimization -->
+        <div x-show="activePage === 'gaio'" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+            <section class="py-20">
+                <div class="text-center max-w-4xl mx-auto"><h1 class="text-5xl md:text-6xl font-extrabold mb-4">Interactive <span class="gradient-text dark:dark:gradient-text">GAIO Modeler</span></h1><p class="text-lg md:text-xl text-gray-600 dark:text-gray-400">See the impact of optimizing your digital presence in real-time. Adjust the sliders to see how improving each pillar of Generative AI Optimization can boost your overall score.</p></div>
+                <div class="grid md:grid-cols-2 gap-12 items-center mt-16">
+                    <div class="space-y-6">
+                        <div><label class="font-semibold">GEO Score: <span x-text="gaioScores.geo" class="font-bold text-indigo-500"></span></label><input type="range" min="0" max="100" x-model.number="gaioScores.geo" @input="updateGaioScores()"></div>
+                        <div><label class="font-semibold">AEO Score: <span x-text="gaioScores.aeo" class="font-bold text-indigo-500"></span></label><input type="range" min="0" max="100" x-model.number="gaioScores.aeo" @input="updateGaioScores()"></div>
+                        <div><label class="font-semibold">SEO Score: <span x-text="gaioScores.seo" class="font-bold text-indigo-500"></span></label><input type="range" min="0" max="100" x-model.number="gaioScores.seo" @input="updateGaioScores()"></div>
+                        <div><label class="font-semibold">E-E-A-T Score: <span x-text="gaioScores.eeat" class="font-bold text-indigo-500"></span></label><input type="range" min="0" max="100" x-model.number="gaioScores.eeat" @input="updateGaioScores()"></div>
+                    </div>
+                    <div class="h-96"><canvas id="gaioScoreChart"></canvas></div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- PAGE: How It Works -->
+        <div x-show="activePage === 'how-it-works'" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+             <section class="py-20">
+                 <div class="text-center mb-12"><h1 class="text-5xl font-extrabold mb-4">Our Full-Stack <span class="gradient-text dark:dark:gradient-text">GAIO Framework</span></h1><p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">We use a holistic, five-pillar strategy to ensure your brand dominates in the age of AI. Each pillar is essential for building a resilient and authoritative digital presence.</p></div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg"><h3 class="text-xl font-bold mb-2">1. Generative Engine Optimization (GEO)</h3><p class="text-gray-600 dark:text-gray-400">The technical foundation. We structure your site and content with schema markup and clean code, making it perfectly parsable for AI crawlers.</p></div>
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg"><h3 class="text-xl font-bold mb-2">2. Answer Engine Optimization (AEO)</h3><p class="text-gray-600 dark:text-gray-400">Winning the conversational query. We craft content in Q&A formats that directly answers your customers' questions.</p></div>
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg"><h3 class="text-xl font-bold mb-2">3. Foundational SEO</h3><p class="text-gray-600 dark:text-gray-400">The non-negotiable baseline. Strong traditional SEO is required for AI to find and trust your content in the first place.</p></div>
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg"><h3 class="text-xl font-bold mb-2">4. E-E-A-T Signals</h3><p class="text-gray-600 dark:text-gray-400">The currency of AI trust. We build your Experience, Expertise, Authoritativeness, and Trust through verifiable data and expert content.</p></div>
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg"><h3 class="text-xl font-bold mb-2">5. AI Share of Voice (AI SoV)</h3><p class="text-gray-600 dark:text-gray-400">The new competitive benchmark. We track your citation frequency and sentiment against competitors to constantly refine our strategy.</p></div>
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg flex items-center justify-center"><button class="px-6 py-3 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition glow">Learn More</button></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE: Clients -->
+        <div x-show="activePage === 'clients'" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+            <section class="py-20">
+                <div class="text-center max-w-4xl mx-auto"><h1 class="text-5xl md:text-6xl font-extrabold mb-4">Driving Growth for <span class="gradient-text dark:dark:gradient-text">Innovative Brands</span></h1><p class="text-lg md:text-xl text-gray-600 dark:text-gray-400">We partner with forward-thinking companies to navigate the future of digital discovery. See what our clients have to say.</p></div>
+                <div class="grid md:grid-cols-2 gap-8 mt-16 max-w-5xl mx-auto">
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg">
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">"adSight didn't just get us ready for the future of search, they put us at the forefront. Our visibility in AI answers has driven the highest quality leads we've ever seen."</p>
+                        <div class="flex items-center"><div class="w-12 h-12 rounded-full bg-indigo-200 mr-4"></div><div><p class="font-bold">Jane Doe</p><p class="text-sm text-gray-500">CMO, Nexus Innovations</p></div></div>
+                    </div>
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg">
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">"The strategic insights from the adSight team have been a game-changer. We now understand not just what our customers are searching for, but the intent behind their questions."</p>
+                        <div class="flex items-center"><div class="w-12 h-12 rounded-full bg-purple-200 mr-4"></div><div><p class="font-bold">John Smith</p><p class="text-sm text-gray-500">CEO, Quantum Solutions</p></div></div>
+                    </div>
+                </div>
+                <div class="mt-20 max-w-4xl mx-auto p-8 card-bg dark:dark:card-bg rounded-2xl">
+                    <h2 class="text-3xl font-bold mb-4 text-center">Measurable Impact: Client ROI</h2>
+                    <div><canvas id="roiChart"></canvas></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE: Pricing -->
+        <div x-show="activePage === 'products'" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+            <section class="py-20">
+                 <div class="text-center mb-12"><h1 class="text-5xl font-extrabold mb-4">Solutions Tailored for <span class="gradient-text dark:dark:gradient-text">Your Growth</span></h1><p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Whether you're just starting out or scaling up, we have a plan that fits your needs.</p></div>
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg border-2 border-transparent hover:border-indigo-500 transition-all duration-300 transform hover:-translate-y-2"><h3 class="text-2xl font-bold mb-2">Starter</h3><p class="text-gray-500 dark:text-gray-400 mb-6">For individuals and small businesses getting started.</p><p class="text-4xl font-extrabold mb-6">$99<span class="text-lg font-medium text-gray-500 dark:text-gray-400">/mo</span></p><ul class="space-y-4 text-left mb-8"><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>50 Reports per month</span></li><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>Standard Support</span></li><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>Access to Core Features</span></li></ul><button @click="selectPlan('Starter')" class="w-full py-3 font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition">Choose Plan</button></div>
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg border-2 border-indigo-500 transition-all duration-300 transform hover:-translate-y-2 relative overflow-hidden glow"><div class="absolute top-0 right-0 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">MOST POPULAR</div><h3 class="text-2xl font-bold mb-2">Professional</h3><p class="text-gray-500 dark:text-gray-400 mb-6">For growing businesses serious about data-driven decisions.</p><p class="text-4xl font-extrabold mb-6">$299<span class="text-lg font-medium text-gray-500 dark:text-gray-400">/mo</span></p><ul class="space-y-4 text-left mb-8"><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>200 Reports per month</span></li><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>Priority Support</span></li><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>API Access</span></li><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>Team Collaboration</span></li></ul><button @click="selectPlan('Professional')" class="w-full py-3 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">Choose Plan</button></div>
+                    <div class="p-8 rounded-2xl card-bg dark:dark:card-bg border-2 border-transparent hover:border-indigo-500 transition-all duration-300 transform hover:-translate-y-2"><h3 class="text-2xl font-bold mb-2">Enterprise</h3><p class="text-gray-500 dark:text-gray-400 mb-6">For large organizations requiring custom solutions.</p><p class="text-4xl font-extrabold mb-6">Custom</p><ul class="space-y-4 text-left mb-8"><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>Unlimited Reports</span></li><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>Dedicated Account Manager</span></li><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>Custom Integrations</span></li><li class="flex items-center space-x-3"><i data-lucide="check" class="w-5 h-5 text-indigo-500"></i><span>Premium Security & SSO</span></li></ul><button @click="selectPlan('Enterprise')" class="w-full py-3 font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition">Contact Us</button></div>
+                 </div>
+            </section>
+        </div>
+        
+        <!-- PAGE: Blog -->
+        <div x-show="activePage === 'blog'" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+             <section class="py-20">
+                 <div class="text-center mb-12"><h1 class="text-5xl font-extrabold mb-4">Insights from the <span class="gradient-text dark:dark:gradient-text">adSight Blog</span></h1></div>
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <div class="group"><div class="overflow-hidden rounded-lg mb-4"><img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop" alt="Blog post image" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"></div><h3 class="text-xl font-bold mb-2 group-hover:text-indigo-500 transition">The Future of Market Research is Generative</h3><p class="text-gray-600 dark:text-gray-400">Discover how AI is revolutionizing the way we understand consumer behavior and market dynamics.</p></div>
+                    <div class="group"><div class="overflow-hidden rounded-lg mb-4"><img src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop" alt="Blog post image" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"></div><h3 class="text-xl font-bold mb-2 group-hover:text-indigo-500 transition">5 Ways to Outsmart Your Competition with AI</h3><p class="text-gray-600 dark:text-gray-400">Learn actionable strategies to leverage AI for a sustainable competitive advantage.</p></div>
+                    <div class="group"><div class="overflow-hidden rounded-lg mb-4"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop" alt="Blog post image" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"></div><h3 class="text-xl font-bold mb-2 group-hover:text-indigo-500 transition">Data Storytelling: Turning Insights into Impact</h3><p class="text-gray-600 dark:text-gray-400">Go beyond the numbers. Learn how to craft compelling narratives that drive action.</p></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-20 border-t border-gray-200 dark:border-gray-800">
+         <div class="container mx-auto px-6 py-8"><div class="flex flex-col md:flex-row justify-between items-center"><div class="flex items-center space-x-4 mb-4 md:mb-0"><img src="https://i.ibb.co/mHwz79M/image-7c8fdb.jpg" alt="adSight Logo" class="h-8 w-8 rounded-full"><span class="text-lg font-semibold">adSight</span></div><div class="flex space-x-6 text-gray-500 dark:text-gray-400"><a href="#" class="hover:text-indigo-500">Twitter</a><a href="#" class="hover:text-indigo-500">LinkedIn</a><a href="#" class="hover:text-indigo-500">Privacy Policy</a></div></div><p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">&copy; 2024 adSight. All rights reserved.</p></div>
+    </footer>
+
+    <!-- Signup Modal -->
+    <div x-show="showSignupModal" @keydown.escape.window="showSignupModal = false" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div x-show="showSignupModal" x-transition @click.outside="showSignupModal = false" class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8"><h2 class="text-2xl font-bold text-center mb-2">Get Started with adSight</h2><p class="text-center text-gray-600 dark:text-gray-400 mb-6" x-text="`You've selected the ${selectedPlan} plan.`"></p><form><div class="space-y-4"><input type="text" placeholder="Full Name" class="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"><input type="email" placeholder="Email Address" class="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"><button type="submit" class="w-full py-3 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition glow">Create Account</button></div></form></div>
+    </div>
+
+    </div>
+    
+    <script>
+        // NOTE: Firebase SDKs are not used in this version to prevent config errors.
+        // To enable, add your Firebase config and uncomment the initializeFirebase() call.
+        
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('adSightApp', () => ({
+                // State Management
+                activePage: 'home',
+                darkMode: false,
+                query: '',
+                originalQuery: '',
+                answer: '',
+                formattedAnswer: '',
+                isLoading: false,
+                error: '',
+                showSignupModal: false,
+                selectedPlan: '',
+                insights: [],
+                insightInterval: null,
+                roiChart: null,
+                gaioScoreChart: null,
+                gaioScores: { geo: 75, aeo: 80, seo: 85, eeat: 70 },
+
+                // Interactive Globe
+                globe: { scene: null, camera: null, renderer: null, particles: null, globeMesh: null, isMouseDown: false, mouseX: 0, mouseY: 0, targetRotationX: 0, targetRotationY: 0, isInitialized: false },
+
+                // Initialization
+                init() {
+                    this.darkMode = localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    this.applyDarkMode();
+                    this.$watch('darkMode', (value) => {
+                        localStorage.setItem('darkMode', value);
+                        this.applyDarkMode();
+                        this.updateAllChartsTheme(value);
+                        if (this.globe.renderer) {
+                            this.globe.renderer.setClearColor(value ? 0x0a0a0a : 0xf9fafb);
+                        }
+                    });
+                    
+                    this.startInsightFeed();
+                    
+                    this.$nextTick(() => {
+                        lucide.createIcons();
+                        if (this.activePage === 'home' && !this.globe.isInitialized) this.initGlobe();
+                    });
+                },
+                
+                switchPage(pageId) {
+                    this.activePage = pageId;
+                    this.$nextTick(() => {
+                        lucide.createIcons();
+                        if (pageId === 'home' && !this.globe.isInitialized) this.initGlobe();
+                        if (pageId === 'clients' && !this.roiChart) this.createRoiChart();
+                        if (pageId === 'gaio' && !this.gaioScoreChart) this.createGaioScoreChart();
+                    });
+                },
+
+                applyDarkMode() { document.documentElement.classList.toggle('dark', this.darkMode); },
+                
+                async getAnswer() {
+                    if (!this.query.trim()) {
+                        this.error = "Please enter a question.";
+                        return;
+                    }
+                    this.isLoading = true;
+                    this.answer = '';
+                    this.error = '';
+                    this.originalQuery = this.query;
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        this.answer = `### Analysis for: ${this.originalQuery}\n\n**Key Finding 1:** The market shows a 25% year-over-year growth.\n\n* Sub-point A\n* Sub-point B\n\n**Key Finding 2:** Competitor X is losing market share.`;
+                        this.formattedAnswer = this.formatMarkdown(this.answer);
+                        this.isLoading = false;
+                    }, 2000);
+                 },
+                
+                formatMarkdown(text) {
+                    let html = text
+                        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                        .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+                        .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
+                        .replace(/<\/ul>\s?<ul>/gim, '')
+                        .replace(/\n\n/g, '</p><p>')
+                        .replace(/\n/g, '<br>');
+                    return `<p>${html}</p>`;
+                },
+                selectPlan(planName) {
+                    this.selectedPlan = planName;
+                    this.showSignupModal = true;
+                },
+                startInsightFeed() {
+                    const sampleInsights = [
+                        { text: "Consumer sentiment for sustainable goods up 12% in Q3.", source: "Global Retail Monitor" },
+                        { text: "New patent filed by competitor 'InnovateCorp' in AI logistics.", source: "TechCrunch" },
+                        { text: "Emerging trend: Hyper-personalization in B2B marketing.", source: "Marketing Weekly" },
+                        { text: "Supply chain disruption expected for semiconductor industry.", source: "Financial Times" },
+                        { text: "Gen Z engagement with video content on platform 'ClipTok' increases 25%.", source: "Social Media Today" }
+                    ];
+                    this.insightInterval = setInterval(() => {
+                        const newInsight = sampleInsights[Math.floor(Math.random() * sampleInsights.length)];
+                        this.insights.unshift({ id: Date.now(), ...newInsight });
+                        if (this.insights.length > 5) {
+                            this.insights.pop();
+                        }
+                    }, 3000);
+                },
+                
+                createRoiChart() {
+                    const ctx = document.getElementById('roiChart');
+                    if(!ctx) return;
+                    const textColor = this.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+                    const gridColor = this.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+                    this.roiChart = new Chart(ctx.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1 (Y2)', 'Q2 (Y2)'],
+                            datasets: [{
+                                label: 'Traditional SEO Growth',
+                                data: [10, 15, 18, 22, 25, 28],
+                                borderColor: 'rgba(100, 116, 139, 0.5)',
+                                borderWidth: 2,
+                                tension: 0.4
+                            }, {
+                                label: 'Growth with adSight GAIO',
+                                data: [10, 20, 35, 55, 80, 110],
+                                borderColor: '#4F46E5',
+                                backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { labels: { color: textColor } } },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } },
+                                x: { ticks: { color: textColor }, grid: { color: gridColor } }
+                            }
+                        }
+                    });
+                },
+                
+                createGaioScoreChart() {
+                    const ctx = document.getElementById('gaioScoreChart');
+                    if(!ctx) return;
+                    this.gaioScoreChart = new Chart(ctx.getContext('2d'), { type: 'radar', data: {
+                        labels: ['GEO', 'AEO', 'SEO', 'E-E-A-T'],
+                        datasets: [{
+                            label: 'GAIO Score',
+                            data: Object.values(this.gaioScores),
+                            backgroundColor: 'rgba(79, 70, 229, 0.5)',
+                            borderColor: '#4F46E5',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#4F46E5'
+                        }]
+                    }, options: this.getChartOptions() });
+                },
+                updateGaioScores() {
+                    if (this.gaioScoreChart) {
+                        this.gaioScoreChart.data.datasets[0].data = Object.values(this.gaioScores);
+                        this.gaioScoreChart.update();
+                    }
+                },
+                getChartOptions() {
+                    const isDark = this.darkMode;
+                    const textColor = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+                    const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                    const angleLineColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+                    return {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            r: {
+                                beginAtZero: true, max: 100,
+                                pointLabels: { color: textColor, font: { size: 14 } },
+                                grid: { color: gridColor },
+                                angleLines: { color: angleLineColor }
+                            }
+                        }
+                    };
+                },
+                updateAllChartsTheme(isDark) {
+                    const textColor = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+                    const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                    if(this.roiChart) {
+                        this.roiChart.options.plugins.legend.labels.color = textColor;
+                        this.roiChart.options.scales.y.ticks.color = textColor;
+                        this.roiChart.options.scales.y.grid.color = gridColor;
+                        this.roiChart.options.scales.x.ticks.color = textColor;
+                        this.roiChart.options.scales.x.grid.color = gridColor;
+                        this.roiChart.update();
+                    }
+                    if(this.gaioScoreChart) {
+                        const angleLineColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+                        this.gaioScoreChart.options.scales.r.pointLabels.color = textColor;
+                        this.gaioScoreChart.options.scales.r.grid.color = gridColor;
+                        this.gaioScoreChart.options.scales.r.angleLines.color = angleLineColor;
+                        this.gaioScoreChart.update();
+                    }
+                },
+
+                initGlobe() {
+                    const container = document.getElementById('globe-container');
+                    if (!container || this.globe.isInitialized) return;
+                    this.globe.isInitialized = true;
+                    
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                    renderer.setPixelRatio(window.devicePixelRatio);
+                    renderer.setClearColor(this.darkMode ? 0x0a0a0a : 0xf9fafb, 1);
+                    container.innerHTML = '';
+                    container.appendChild(renderer.domElement);
+
+                    const globeGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+                    const globeMaterial = new THREE.MeshPhongMaterial({ color: this.darkMode ? 0x3b82f6 : 0x4f46e5, transparent: true, opacity: 0.6 });
+                    const globeMesh = new THREE.Mesh(globeGeometry, globeMaterial);
+                    scene.add(globeMesh);
+
+                    const particleCount = 5000;
+                    const particles = new THREE.BufferGeometry();
+                    const positions = new Float32Array(particleCount * 3);
+                    for (let i = 0; i < particleCount * 3; i++) {
+                        positions[i] = (Math.random() - 0.5) * 10;
+                    }
+                    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    const particleMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 0.02 });
+                    const particleSystem = new THREE.Points(particles, particleMaterial);
+                    scene.add(particleSystem);
+
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                    scene.add(ambientLight);
+                    const pointLight = new THREE.PointLight(0xffffff, 1);
+                    pointLight.position.set(5, 3, 5);
+                    scene.add(pointLight);
+
+                    camera.position.z = 4;
+
+                    let isMouseDown = false, mouseX = 0, mouseY = 0, targetRotationX = 0, targetRotationY = 0;
+
+                    container.addEventListener('mousedown', () => isMouseDown = true);
+                    document.addEventListener('mouseup', () => isMouseDown = false);
+                    container.addEventListener('mousemove', (e) => {
+                        if (isMouseDown) {
+                            targetRotationY += (e.clientX - mouseX) * 0.01;
+                            targetRotationX += (e.clientY - mouseY) * 0.01;
+                        }
+                        mouseX = e.clientX;
+                        mouseY = e.clientY;
+                    });
+                    
+                    window.addEventListener('resize', () => {
+                        camera.aspect = container.clientWidth / container.clientHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(container.clientWidth, container.clientHeight);
+                    });
+
+                    const animate = () => {
+                        requestAnimationFrame(animate);
+                        globeMesh.rotation.y += 0.0005;
+                        particleSystem.rotation.y += 0.0002;
+                        globeMesh.rotation.y += (targetRotationY - globeMesh.rotation.y) * 0.1;
+                        globeMesh.rotation.x += (targetRotationX - globeMesh.rotation.x) * 0.1;
+                        renderer.render(scene, camera);
+                    };
+                    animate();
+                    
+                    this.globe.renderer = renderer; // Store renderer for dark mode updates
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
