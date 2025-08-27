@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>adSight - Company Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-text { background: linear-gradient(90deg, #4F46E5, #A855F7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .dark .dark\:gradient-text { background: linear-gradient(90deg, #818CF8, #C4B5FD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <div x-data="companyDashboardApp" class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 flex-shrink-0 bg-white dark:bg-gray-800 p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center space-x-3 mb-10">
+                    <img src="https://i.ibb.co/mHwz79M/image-7c8fdb.jpg" alt="adSight Logo" class="h-10 w-10 rounded-full border-2 border-indigo-500/50">
+                    <span class="text-2xl font-bold gradient-text dark:dark:gradient-text">adSight</span>
+                </div>
+                <nav class="space-y-2">
+                    <a href="#" @click.prevent="activeTab = 'overview'" :class="{'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300': activeTab === 'overview'}" class="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+                        <i data-lucide="home"></i><span>Overview</span>
+                    </a>
+                    <a href="#" @click.prevent="activeTab = 'users'" :class="{'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300': activeTab === 'users'}" class="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+                        <i data-lucide="users"></i><span>User Management</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <a href="index.html" class="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 transition">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8 overflow-y-auto">
+            <!-- Overview View -->
+            <div x-show="activeTab === 'overview'">
+                <h1 class="text-3xl font-bold mb-8">Company Overview</h1>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md"><p class="text-sm text-gray-500">Total Users</p><p class="text-3xl font-bold">1,250</p></div>
+                    <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md"><p class="text-sm text-gray-500">API Calls (24h)</p><p class="text-3xl font-bold">8,492</p></div>
+                    <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md"><p class="text-sm text-gray-500">Monthly Revenue</p><p class="text-3xl font-bold">$45,800</p></div>
+                </div>
+                <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md">
+                    <h2 class="text-xl font-semibold mb-4">New User Signups (Last 30 Days)</h2>
+                    <div class="h-80"><canvas id="userSignupChart"></canvas></div>
+                </div>
+            </div>
+            <!-- User Management View -->
+            <div x-show="activeTab === 'users'">
+                <h1 class="text-3xl font-bold mb-8">User Management</h1>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md">
+                    <table class="w-full text-left">
+                        <thead class="border-b border-gray-200 dark:border-gray-700">
+                            <tr>
+                                <th class="p-4">User ID</th>
+                                <th class="p-4">Email</th>
+                                <th class="p-4">Plan</th>
+                                <th class="p-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="user in users" :key="user.id">
+                                <tr class="border-b border-gray-100 dark:border-gray-700/50">
+                                    <td class="p-4 text-sm font-mono" x-text="user.id"></td>
+                                    <td class="p-4" x-text="user.email"></td>
+                                    <td class="p-4" x-text="user.plan"></td>
+                                    <td class="p-4"><span :class="user.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'" class="px-2 py-1 text-xs font-medium rounded-full" x-text="user.status"></span></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            window.firebaseTools = { auth, db, onAuthStateChanged, collection, getDocs };
+        } catch (e) {
+            console.error("Firebase initialization failed. Using mock mode.", e);
+            window.firebaseTools = null;
+        }
+    </script>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('companyDashboardApp', () => ({
+                activeTab: 'overview',
+                darkMode: document.documentElement.classList.contains('dark'),
+                userSignupChart: null,
+                users: [],
+                init() {
+                    lucide.createIcons();
+                    this.$watch('activeTab', () => this.$nextTick(() => lucide.createIcons()));
+                    this.checkAuth();
+                },
+                checkAuth() {
+                     if (window.firebaseTools) {
+                        window.firebaseTools.onAuthStateChanged(window.firebaseTools.auth, (user) => {
+                            if (user && user.email.endsWith('@adsight.com')) {
+                                this.fetchUsers();
+                                this.$nextTick(() => this.createUserSignupChart());
+                            } else {
+                                // In a real app, you'd redirect. For the demo, we allow mock data.
+                                // window.location.href = 'login.html'; 
+                            }
+                        });
+                     } else {
+                        console.log("Running in mock mode. Bypassing auth.");
+                        this.fetchUsers();
+                        this.$nextTick(() => this.createUserSignupChart());
+                     }
+                },
+                async fetchUsers() {
+                    if (window.firebaseTools) {
+                        const querySnapshot = await window.firebaseTools.getDocs(window.firebaseTools.collection(window.firebaseTools.db, "users"));
+                        this.users = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    } else {
+                        // Mock data for offline mode
+                        this.users = [
+                            { id: 'usr_1a2b3c', email: 'client1@example.com', plan: 'Professional', status: 'Active' },
+                            { id: 'usr_4d5e6f', email: 'client2@example.com', plan: 'Starter', status: 'Active' },
+                            { id: 'usr_7g8h9i', email: 'client3@example.com', plan: 'Enterprise', status: 'Active' },
+                        ];
+                    }
+                },
+                createUserSignupChart() {
+                    const ctx = document.getElementById('userSignupChart');
+                    if (!ctx) return;
+                    const textColor = this.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+                    this.userSignupChart = new Chart(ctx.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                            datasets: [{
+                                label: 'New Users',
+                                data: [120, 180, 150, 250],
+                                borderColor: '#4F46E5',
+                                backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true, ticks: { color: textColor } }, x: { ticks: { color: textColor } } }
+                        }
+                    });
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
