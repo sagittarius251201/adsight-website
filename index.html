@@ -12,7 +12,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #FFFFFF; color: #111827; scroll-behavior: smooth; }
         .chart-container { position: relative; height: 350px; width: 100%; }
@@ -30,13 +30,51 @@
         .interactive-ui .element:hover { filter: brightness(0.97); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
         .interactive-ui .tooltip { visibility: hidden; opacity: 0; transition: opacity 0.2s; }
         .interactive-ui .group:hover .tooltip { visibility: visible; opacity: 1; }
+
+        /* --- STYLES FOR INTEGRATED GEO STUDIO --- */
+        .geo-studio-container {
+            --bg-primary: #0F172A; --bg-secondary: #1E293B; --border-color: #334155;
+            --text-primary: #E2E8F0; --text-secondary: #94A3B8; --accent-primary: #4F46E5; --accent-hover: #4338CA;
+            background-color: var(--bg-primary); color: var(--text-primary); border-radius: 0.75rem;
+        }
+        .geo-card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1.5rem; }
+        .geo-btn-primary {
+            background-color: var(--accent-primary); color: white; font-weight: 600; padding: 0.5rem 1rem;
+            border-radius: 0.5rem; transition: background-color 0.2s; border: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
+        }
+        .geo-btn-primary:hover { background-color: var(--accent-hover); }
+        .geo-btn-primary:disabled { background-color: #334155; color: var(--text-secondary); cursor: not-allowed; }
+        .geo-text-input { background-color: #334155; border: 1px solid #475569; color: var(--text-primary); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem;}
+        .geo-loader {
+            border: 4px solid #4b5563; border-top: 4px solid var(--accent-primary); border-radius: 50%;
+            width: 32px; height: 32px; animation: spin 1s linear infinite;
+        }
+        .geo-main-grid { display: grid; grid-template-columns: 320px 1fr; gap: 1rem; height: calc(100vh - 250px); }
+        .geo-editor-grid { display: grid; grid-template-columns: 1fr 300px; gap: 1rem; height: 100%; }
+        .geo-main-content, .geo-sidebar, .geo-editor-pane { overflow-y: auto; }
+        .geo-interactive-editor {
+            background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.5rem;
+            padding: 1rem; height: 100%; color: var(--text-primary); outline: none;
+        }
+        .geo-interactive-editor:focus-within { border-color: var(--accent-primary); }
+        .geo-highlight { background-color: rgba(79, 70, 229, 0.3); border-radius: 3px; }
+        .geo-score-circle-bg { stroke: var(--border-color); }
+        .geo-score-circle-fg { stroke: var(--accent-primary); transition: stroke-dashoffset 0.5s ease-out; }
+        .geo-score-text { fill: var(--text-primary); font-size: 2.5em; font-weight: 900; }
+        .geo-score-label { fill: var(--text-secondary); font-size: 0.9em; }
+        .geo-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .geo-mode-btn.active { background-color: var(--accent-primary); color: white; }
+        .geo-main-content ::-webkit-scrollbar, .geo-sidebar ::-webkit-scrollbar { width: 8px; }
+        .geo-main-content ::-webkit-scrollbar-track, .geo-sidebar ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        .geo-main-content ::-webkit-scrollbar-thumb, .geo-sidebar ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .geo-main-content ::-webkit-scrollbar-thumb:hover, .geo-sidebar ::-webkit-scrollbar-thumb:hover { background: #64748B; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
 
         // --- MOCK DATA STORE ---
         const mockData = {
@@ -75,6 +113,7 @@
                 pieChart: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>,
                 dollarSign: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
                 trendingUp: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+                sparkles: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z"/></svg>
             };
             return <div className={`w-6 h-6 ${className}`}>{icons[name]}</div>;
         };
@@ -92,7 +131,7 @@
             return <div className={className}><canvas ref={chartRef}></canvas></div>;
         };
         
-        // --- WEBSITE COMPONENTS ---
+        // --- WEBSITE COMPONENTS (UNCHANGED) ---
         const Header = ({ setRoute }) => (
             <header className="bg-white/90 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200">
                 <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -511,7 +550,6 @@
             const [submitted, setSubmitted] = useState(false);
             const handleSubmit = (e) => {
                 e.preventDefault();
-                // In a real app, this would handle registration logic
                 setSubmitted(true);
             };
 
@@ -545,6 +583,294 @@
                 </div>
             );
         };
+        
+        // --- START: INTEGRATED GEO STUDIO COMPONENT ---
+        const GeoStudioComponent = () => {
+            const [apiKey, setApiKey] = useState('');
+            const [tempApiKey, setTempApiKey] = useState('');
+            const [mode, setMode] = useState('brief');
+            const [briefKeyword, setBriefKeyword] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+            const [briefData, setBriefData] = useState(null);
+            const [editorContent, setEditorContent] = useState('');
+            const [analysisContent, setAnalysisContent] = useState('');
+            const [wordCount, setWordCount] = useState(0);
+            const [readability, setReadability] = useState({ score: 0, label: 'N/A' });
+            const [geoScore, setGeoScore] = useState(0);
+            const editorRef = useRef(null);
+            const analysisEditorRef = useRef(null);
+
+            useEffect(() => {
+                const savedKey = sessionStorage.getItem('geminiApiKey_adsight');
+                if (savedKey) {
+                    setApiKey(savedKey);
+                    setTempApiKey(savedKey);
+                }
+            }, []);
+
+            const handleSaveKey = () => {
+                sessionStorage.setItem('geminiApiKey_adsight', tempApiKey);
+                setApiKey(tempApiKey);
+                alert('API Key saved for this session.');
+            };
+
+            const debounce = (func, delay) => {
+                let timeout;
+                return (...args) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func(...args), delay);
+                };
+            };
+            
+            const callGeminiApi = async (prompt, retries = 2, delay = 1000) => {
+                const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const isJsonPrompt = prompt.includes("Respond ONLY with a JSON");
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        temperature: 0.2,
+                        maxOutputTokens: 2048,
+                        responseMimeType: isJsonPrompt ? "application/json" : "text/plain"
+                    }
+                };
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                        return data.candidates[0].content.parts[0].text;
+                    }
+                    throw new Error("Invalid response structure from API.");
+                } catch (error) {
+                    if (retries > 0) {
+                        await new Promise(res => setTimeout(res, delay));
+                        return callGeminiApi(prompt, retries - 1, delay * 2);
+                    }
+                    throw error;
+                }
+            };
+            
+            const handleGenerateBrief = async () => {
+                if (!briefKeyword || !apiKey) return;
+                setIsLoading(true);
+                setBriefData(null);
+                setEditorContent('');
+                
+                try {
+                    const [competitors, outline, entities] = await Promise.all([
+                        callGeminiApi(`Simulate a SERP for "${briefKeyword}". Generate a summary for the top 3 ranking articles. For each, provide a title, a 2-sentence summary, an estimated word count (800-2000), and a GEO score (60-95). Respond ONLY with a JSON array of objects with keys: "title", "summary", "wordCount", "geoScore".`),
+                        callGeminiApi(`Generate a comprehensive content outline for an article about "${briefKeyword}". Include H2 and H3 headings. Format as an HTML unordered list with nested lists.`),
+                        callGeminiApi(`List the top 15 most important semantic keywords and entities for an article about "${briefKeyword}". Respond ONLY with a JSON array of strings.`),
+                    ]);
+                    
+                    setBriefData({
+                        competitors: JSON.parse(competitors),
+                        outline,
+                        keywords: JSON.parse(entities)
+                    });
+                } catch(error) {
+                    console.error('Brief generation failed:', error);
+                    alert('Brief generation failed. Please check your API key and the console for details.');
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const calculateReadability = (content) => {
+                const words = content.match(/\b\w+\b/g) || [];
+                const sentences = content.split(/[.!?]+/).filter(Boolean);
+                if (words.length < 20 || sentences.length < 2) return { score: 0, label: 'N/A' };
+                const syllableCount = (content.match(/[aeiouy]{1,2}/gi) || []).length;
+                const gradeLevel = 0.39 * (words.length / sentences.length) + 11.8 * (syllableCount / words.length) - 15.59;
+                
+                let label = 'Very Difficult';
+                if (gradeLevel < 5) label = "Very Easy";
+                else if (gradeLevel < 8) label = "Easy";
+                else if (gradeLevel < 11) label = "Standard";
+                else if (gradeLevel < 13) label = "Difficult";
+                return { score: Math.max(0, 100 - (gradeLevel * 5)), label };
+            };
+
+            const calculateGeoScore = (content, readability, keywords) => {
+                let score = 0;
+                const contentLower = content.toLowerCase();
+                score += readability.score * 0.20; // Readability Score (20%)
+                if (keywords && keywords.length > 0) {
+                    const usedKeywords = keywords.filter(k => contentLower.includes(k.toLowerCase())).length;
+                    score += (usedKeywords / keywords.length) * 40; // Keyword Usage (40%)
+                }
+                const h1Count = (content.match(/^#\s/gm) || []).length;
+                const h2Count = (content.match(/^##\s/gm) || []).length;
+                if (h1Count === 1) score += 5;
+                if (h2Count > 2) score += 10;
+                if ((content.split(/\n\s*\n/).length) > 5) score += 10; // Structural elements (25%)
+                const wordCount = (content.match(/\b\w+\b/g) || []).length;
+                if (wordCount > 500) score += 5;
+                if (wordCount > 1000) score += 5;
+                if (wordCount > 1500) score += 5; // Word count (15%)
+                return Math.min(100, Math.round(score));
+            };
+
+            const updateMetrics = (content, editorType) => {
+                const words = (content.match(/\b\w+\b/g) || []).length;
+                const read = calculateReadability(content);
+                const score = calculateGeoScore(content, read, editorType === 'brief' ? briefData?.keywords : []);
+                
+                setWordCount(words);
+                setReadability(read);
+                setGeoScore(score);
+
+                if (editorType === 'analysis') {
+                    // Placeholder for future live analysis suggestions
+                }
+            };
+            
+            const debouncedUpdate = useMemo(() => debounce(updateMetrics, 500), [briefData]);
+
+            const handleEditorInput = (e, editorType) => {
+                const content = e.target.innerText;
+                if (editorType === 'brief') setEditorContent(content);
+                else setAnalysisContent(content);
+                debouncedUpdate(content, editorType);
+            };
+            
+            const KeywordChecklist = ({ keywords, content }) => {
+                const contentLower = content.toLowerCase();
+                return (
+                    <ul className="space-y-1 text-sm">
+                        {keywords.map(k => (
+                            <li key={k} className={`transition-colors ${contentLower.includes(k.toLowerCase()) ? 'text-green-400 line-through' : 'text-gray-400'}`}>
+                                {k}
+                            </li>
+                        ))}
+                    </ul>
+                );
+            };
+
+            const Section = ({ title, children }) => (
+                <div className="geo-fade-in">
+                    <h3 className="text-base font-semibold text-white mb-3">{title}</h3>
+                    <div className="prose prose-sm prose-invert max-w-none text-gray-300">{children}</div>
+                </div>
+            );
+
+            return (
+                <div className="p-6 geo-studio-container">
+                    <div className="geo-main-grid">
+                        <aside className="geo-sidebar geo-card flex flex-col gap-6">
+                            <div>
+                                <h2 className="text-lg font-semibold text-white mb-3">GEO Studio Controls</h2>
+                                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-900 rounded-lg">
+                                    <button onClick={() => setMode('brief')} className={`geo-mode-btn rounded-md py-2 text-sm font-semibold ${mode === 'brief' ? 'active' : ''}`}>Content Brief</button>
+                                    <button onClick={() => setMode('analysis')} className={`geo-mode-btn rounded-md py-2 text-sm font-semibold ${mode === 'analysis' ? 'active' : ''}`}>Analysis</button>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-end gap-2">
+                                <div className="flex-grow">
+                                    <label className="block text-xs font-medium text-gray-400 mb-1">Gemini API Key</label>
+                                    <input type="password" value={tempApiKey} onChange={e => setTempApiKey(e.target.value)} className="geo-text-input w-full"/>
+                                </div>
+                                <button onClick={handleSaveKey} className="geo-btn-primary">Save</button>
+                            </div>
+
+                            {mode === 'brief' && (
+                                <div className="space-y-4">
+                                    <h3 className="text-base font-semibold text-white">New Content Brief</h3>
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-400 mb-1">Target Keyword</label>
+                                        <input type="text" value={briefKeyword} onChange={e => setBriefKeyword(e.target.value)} className="geo-text-input w-full" placeholder="e.g., 'urban beekeeping'"/>
+                                    </div>
+                                    <button onClick={handleGenerateBrief} disabled={!apiKey || isLoading} className="geo-btn-primary w-full justify-center">
+                                        <Icon name="sparkles" className="w-4 h-4" />
+                                        <span>{isLoading ? 'Generating...' : 'Generate Brief'}</span>
+                                    </button>
+                                </div>
+                            )}
+
+                            {mode === 'analysis' && (
+                                <div className="space-y-4">
+                                    <h3 className="text-base font-semibold text-white">Live Analysis</h3>
+                                    <p className="text-sm text-gray-400">Paste your content in the editor to get a live score and detailed analysis.</p>
+                                </div>
+                            )}
+
+                             <div className="border-t border-gray-700 pt-4 mt-auto">
+                                <h3 className="font-semibold text-white mb-3">Live Metrics</h3>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between items-center"><span className="text-gray-400">Word Count</span><span className="font-semibold">{wordCount}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-gray-400">Readability</span><span className="font-semibold">{readability.label}</span></div>
+                                </div>
+                            </div>
+
+                             <div className="pt-4 border-t border-gray-700 text-center">
+                                 <h3 className="font-semibold text-white mb-2">GEO Score</h3>
+                                 <svg className="mx-auto" width="120" height="120" viewBox="0 0 120 120">
+                                    <circle className="geo-score-circle-bg" cx="60" cy="60" r="54" fill="none" strokeWidth="12"></circle>
+                                    <circle className="geo-score-circle-fg" cx="60" cy="60" r="54" fill="none" strokeWidth="12" pathLength="100" strokeDasharray="100" style={{strokeDashoffset: 100 - geoScore}} transform="rotate(-90 60 60)"></circle>
+                                    <text className="geo-score-text" x="60" y="68" textAnchor="middle">{geoScore}</text>
+                                </svg>
+                            </div>
+                        </aside>
+
+                        <main className="geo-main-content">
+                             {mode === 'brief' && (
+                                <>
+                                    {!briefData && !isLoading && (
+                                        <div className="h-full flex flex-col justify-center items-center text-center text-gray-500">
+                                            <h2 className="text-xl font-semibold text-white">Content Brief Generator</h2>
+                                            <p className="mt-2 max-w-md">Enter a keyword to generate a content plan, analyze competitors, and start writing.</p>
+                                        </div>
+                                    )}
+                                    {isLoading && <div className="h-full flex justify-center items-center"><div className="geo-loader"></div></div>}
+                                    {briefData && (
+                                        <div className="geo-editor-grid">
+                                            <div className="geo-editor-pane geo-card"><div ref={editorRef} onInput={e => handleEditorInput(e, 'brief')} contentEditable="true" className="geo-interactive-editor"></div></div>
+                                            <div className="geo-sidebar geo-card space-y-6">
+                                                <Section title="Competitor Analysis">
+                                                    {briefData.competitors.map(c => (
+                                                        <div key={c.title} className="p-3 bg-gray-900 rounded-lg">
+                                                            <h4 className="font-semibold text-indigo-400 text-sm">{c.title}</h4>
+                                                            <p className="text-xs text-gray-400 mt-1">{c.summary}</p>
+                                                            <div className="flex justify-between text-xs mt-2 text-gray-300">
+                                                                <span>~{c.wordCount} words</span>
+                                                                <span className="font-bold">Score: {c.geoScore}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </Section>
+                                                <Section title="Suggested Outline"><div dangerouslySetInnerHTML={{ __html: briefData.outline }}></div></Section>
+                                                <Section title="Keywords & Entities"><KeywordChecklist keywords={briefData.keywords} content={editorContent} /></Section>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                             {mode === 'analysis' && (
+                                <div className="h-full">
+                                    <div className="h-full geo-editor-grid">
+                                        <div className="geo-editor-pane geo-card">
+                                            <div ref={analysisEditorRef} onInput={e => handleEditorInput(e, 'analysis')} contentEditable="true" className="geo-interactive-editor h-full" placeholder="Paste your content here for analysis..."></div>
+                                        </div>
+                                        <div className="geo-sidebar geo-card space-y-6">
+                                            <h2 className="text-lg font-semibold text-white">Analysis</h2>
+                                            <p className="text-sm text-gray-400">Your content analysis will appear here once you start typing or paste your text.</p>
+                                            {/* In a real app, AI suggestions would be fetched and displayed here */}
+                                        </div>
+                                    </div>
+                                </div>
+                             )}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+        // --- END: INTEGRATED GEO STUDIO COMPONENT ---
 
         const ClientDashboard = ({ setRoute }) => {
             const [activeTab, setActiveTab] = useState('overview');
@@ -571,9 +897,11 @@
                             <a href="#" onClick={(e) => { e.preventDefault(); setRoute('home'); }} className="flex items-center gap-2"><Icon name="package" /> AdSight</a>
                         </div>
                          <nav className="mt-10 space-y-2">
-                            <a href="#" onClick={() => setActiveTab('overview')} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'overview' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'}`}>Dashboard</a>
-                            <a href="#" onClick={() => setActiveTab('workbench')} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'workbench' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'}`}>Workbench</a>
-                            <a href="#" onClick={() => setActiveTab('billing')} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'billing' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'}`}>Billing & Services</a>
+                            <a href="#" onClick={(e) => {e.preventDefault(); setActiveTab('overview')}} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'overview' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>Dashboard</a>
+                            <a href="#" onClick={(e) => {e.preventDefault(); setActiveTab('workbench')}} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'workbench' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>Workbench</a>
+                            {/* --- ADDED GEO STUDIO TAB --- */}
+                            <a href="#" onClick={(e) => {e.preventDefault(); setActiveTab('geoStudio')}} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'geoStudio' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>GEO Studio</a>
+                            <a href="#" onClick={(e) => {e.preventDefault(); setActiveTab('billing')}} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'billing' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>Billing & Services</a>
                         </nav>
                         <div className="mt-auto p-4 bg-indigo-50 rounded-lg text-center">
                             <h4 className="font-bold text-indigo-800">Need Help?</h4>
@@ -644,6 +972,8 @@
                                 </div>
                             </div>
                         }
+                        {/* --- RENDER GEO STUDIO TAB CONTENT --- */}
+                        {activeTab === 'geoStudio' && <GeoStudioComponent />}
                         {activeTab === 'billing' && 
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900">Billing & Services</h1>
@@ -828,5 +1158,4 @@
     </script>
 </body>
 </html>
-
 
