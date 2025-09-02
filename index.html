@@ -10,128 +10,109 @@
     <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #FFFFFF; color: #111827; scroll-behavior: smooth; }
-        .chart-container { position: relative; height: 350px; width: 100%; }
+        body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; color: #111827; scroll-behavior: smooth; }
         .dashboard-chart { position: relative; height: 300px; width: 100%; }
         .gradient-text { background: -webkit-linear-gradient(45deg, #4f46e5, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
-        
+        @keyframes spin { to { transform: rotate(360deg); } }
         .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
-        .fade-out { animation: fadeOut 0.5s ease-in-out forwards; }
-        .llm-logo-container { transition: all 0.5s ease-in-out; }
-
-        .interactive-ui .element { transition: all 0.2s ease-in-out; cursor: pointer; }
-        .interactive-ui .element:hover { filter: brightness(0.97); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-        .interactive-ui .tooltip { visibility: hidden; opacity: 0; transition: opacity 0.2s; }
-        .interactive-ui .group:hover .tooltip { visibility: visible; opacity: 1; }
-
-        /* --- STYLES FOR INTEGRATED GEO STUDIO --- */
+        .loader {
+            border: 4px solid #e5e7eb; border-top: 4px solid #4f46e5;
+            border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite;
+        }
+        /* Styles for Content Studio */
         .geo-studio-container {
-            --bg-primary: #0F172A; --bg-secondary: #1E293B; --border-color: #334155;
-            --text-primary: #E2E8F0; --text-secondary: #94A3B8; --accent-primary: #4F46E5; --accent-hover: #4338CA;
-            background-color: var(--bg-primary); color: var(--text-primary); border-radius: 0.75rem;
+            --bg-primary: #F9FAFB; --bg-secondary: #FFFFFF; --border-color: #E5E7EB;
+            --text-primary: #111827; --text-secondary: #6B7280; --accent-primary: #4F46E5; --accent-hover: #4338CA;
+            background-color: var(--bg-primary); color: var(--text-primary);
         }
         .geo-card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1.5rem; }
         .geo-btn-primary {
             background-color: var(--accent-primary); color: white; font-weight: 600; padding: 0.5rem 1rem;
-            border-radius: 0.5rem; transition: background-color 0.2s; border: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
+            border-radius: 0.5rem; transition: background-color 0.2s; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.875rem;
         }
         .geo-btn-primary:hover { background-color: var(--accent-hover); }
-        .geo-btn-primary:disabled { background-color: #334155; color: var(--text-secondary); cursor: not-allowed; }
-        .geo-text-input { background-color: #334155; border: 1px solid #475569; color: var(--text-primary); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem;}
-        .geo-loader {
-            border: 4px solid #4b5563; border-top: 4px solid var(--accent-primary); border-radius: 50%;
-            width: 32px; height: 32px; animation: spin 1s linear infinite;
-        }
-        .geo-main-grid { display: grid; grid-template-columns: 320px 1fr; gap: 1rem; height: calc(100vh - 250px); }
-        .geo-editor-grid { display: grid; grid-template-columns: 1fr 300px; gap: 1rem; height: 100%; }
-        .geo-main-content, .geo-sidebar, .geo-editor-pane { overflow-y: auto; }
+        .geo-btn-primary:disabled { background-color: #A5B4FC; cursor: not-allowed; }
+        .geo-text-input, .geo-textarea { background-color: #F3F4F6; border: 1px solid #D1D5DB; color: var(--text-primary); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; width: 100%;}
         .geo-interactive-editor {
-            background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.5rem;
-            padding: 1rem; height: 100%; color: var(--text-primary); outline: none;
+            background-color: #FFFFFF; border: 1px solid #D1D5DB; border-radius: 0.5rem;
+            padding: 1rem; height: 100%; color: #111827; outline: none; white-space: pre-wrap;
         }
-        .geo-interactive-editor:focus-within { border-color: var(--accent-primary); }
-        .geo-highlight { background-color: rgba(79, 70, 229, 0.3); border-radius: 3px; }
-        .geo-score-circle-bg { stroke: var(--border-color); }
-        .geo-score-circle-fg { stroke: var(--accent-primary); transition: stroke-dashoffset 0.5s ease-out; }
-        .geo-score-text { fill: var(--text-primary); font-size: 2.5em; font-weight: 900; }
-        .geo-score-label { fill: var(--text-secondary); font-size: 0.9em; }
-        .geo-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        .geo-mode-btn.active { background-color: var(--accent-primary); color: white; }
-        .geo-main-content ::-webkit-scrollbar, .geo-sidebar ::-webkit-scrollbar { width: 8px; }
-        .geo-main-content ::-webkit-scrollbar-track, .geo-sidebar ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-        .geo-main-content ::-webkit-scrollbar-thumb, .geo-sidebar ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        .geo-main-content ::-webkit-scrollbar-thumb:hover, .geo-sidebar ::-webkit-scrollbar-thumb:hover { background: #64748B; }
+        .node { stroke: #fff; stroke-width: 1.5px; }
+        .link { stroke: #999; stroke-opacity: 0.6; }
+        .node-text { fill: #374151; font-size: 10px; pointer-events: none; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
-
-        // --- MOCK DATA STORE ---
-        const mockData = {
-            clients: [
-                { id: 'client_innovate_corp', name: 'Innovate Corp', health: 'Healthy', mrr: 2500, score: 88, alert: null, contractRenewal: '2026-03-01', manager: 'John Doe' },
-                { id: 'client_synergy_solutions', name: 'Synergy Solutions', health: 'At Risk', mrr: 1500, score: 65, alert: "Score dropped 10 pts", contractRenewal: '2025-11-15', manager: 'Jane Smith' },
-                { id: 'client_quantum_dynamics', name: 'Quantum Dynamics', health: 'Healthy', mrr: 5000, score: 92, alert: null, contractRenewal: '2026-07-20', manager: 'John Doe' },
-                { id: 'client_stellar_tech', name: 'Stellar Tech', health: 'Healthy', mrr: 3000, score: 78, alert: null, contractRenewal: '2026-01-30', manager: 'Emily White' },
-                { id: 'client_momentum_inc', name: 'Momentum Inc.', health: 'At Risk', mrr: 1000, score: 55, alert: "No new mentions in 14 days", contractRenewal: '2025-09-05', manager: 'Jane Smith' },
-            ],
-            optimizationTasks: {
-                'client_innovate_corp': [
-                    { id: 1, topic: 'AI-driven Customer Service', priority: 'High', status: 'Completed', details: 'Enhanced blog post with new statistical data and expert quotes.' },
-                    { id: 2, topic: 'Predictive Analytics for Retail', priority: 'High', status: 'In Progress', details: 'Creating a new case study page featuring client success stories.' },
-                ],
-                'client_synergy_solutions': [
-                    { id: 3, topic: 'Foundational GAIO Audit', priority: 'High', status: 'In Progress', details: 'Auditing existing content for citability and authority.' },
-                ]
-            },
-            clientServices: {
-                'client_innovate_corp': {
-                    plan: { name: 'Professional Plan', price: 499 },
-                    addons: [ { name: 'Advanced Competitor API Access', price: 199, active: true } ]
-                }
-            }
-        };
-
+        const { useState, useEffect, useRef, useCallback, useMemo } = React;
+        
         // --- UI COMPONENTS ---
         const Icon = ({ name, className }) => {
             const icons = {
                 package: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.0001 2.00002C6.47727 2.00002 2.00006 6.47723 2.00006 12C2.00006 17.5228 6.47727 22 12.0001 22C17.5229 22 22.0001 17.5228 22.0001 12C22.0001 6.47723 17.5229 2.00002 12.0001 2.00002ZM12.0001 4.00002C16.4184 4.00002 20.0001 7.58172 20.0001 12C20.0001 16.4183 16.4184 20 12.0001 20C7.58181 20 4.00006 16.4183 4.00006 12C4.00006 7.58172 7.58181 4.00002 12.0001 4.00002Z" /></svg>,
-                check: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
                 barChart: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="20" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></svg>,
                 users: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
-                smile: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>,
-                pieChart: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>,
-                dollarSign: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+                search: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>,
                 trendingUp: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
-                sparkles: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z"/></svg>
+                pieChart: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>,
+                sparkles: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z"/></svg>,
+                fingerprint: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 10v4"/><path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2a4.5 4.5 0 0 0-4.5 4.5 4.5 4.5 0 0 0 1.2 3.1L9 10.8V10c0-1.1.9-2 2-2h.5a2.5 2.5 0 0 1 2.5 2.5V10h.5a2 2 0 0 1 2 2v1.8l.2.8a4.5 4.5 0 0 0 1.3-3.1A4.5 4.5 0 0 0 12 2Z"/><path d="M4.1 11.2a4.5 4.5 0 0 0-2.6 3.3 4.5 4.5 0 0 0 4.5 4.5h7c.8 0 1.5-.2 2.1-.6"/><path d="M19.9 11.2a4.5 4.5 0 0 1 2.6 3.3 4.5 4.5 0 0 1-4.5 4.5h-7a4.5 4.5 0 0 1-4.2-2.9"/></svg>,
+                edit: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+                smile: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>,
+                check: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+                settings: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+                logOut: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
             };
             return <div className={`w-6 h-6 ${className}`}>{icons[name]}</div>;
         };
-
         const ChartComponent = ({ type, data, options, className }) => {
             const chartRef = useRef(null);
             useEffect(() => {
                 if (!chartRef.current) return;
-                const chartInstance = chartRef.current.chart;
+                let chartInstance = chartRef.current.chart;
                 if (chartInstance) chartInstance.destroy();
                 const chart = new Chart(chartRef.current, { type, data, options });
                 chartRef.current.chart = chart;
-                return () => { if(chart) chart.destroy(); };
+                return () => { if(chartRef.current && chartRef.current.chart) { chartRef.current.chart.destroy(); chartRef.current.chart = null; } };
             }, [data, options, type]);
             return <div className={className}><canvas ref={chartRef}></canvas></div>;
         };
+
+        const KnowledgeGraph = ({ data }) => {
+            const svgRef = useRef();
+            useEffect(() => {
+                if (!data || !data.nodes || data.nodes.length === 0) return;
+                const width = 300; const height = 250;
+                const svg = d3.select(svgRef.current).attr("width", width).attr("height", height);
+                svg.selectAll("*").remove(); 
+                const simulation = d3.forceSimulation(data.nodes)
+                    .force("link", d3.forceLink(data.links).id(d => d.id).distance(60))
+                    .force("charge", d3.forceManyBody().strength(-100))
+                    .force("center", d3.forceCenter(width / 2, height / 2));
+                const link = svg.append("g").selectAll("line").data(data.links).enter().append("line").attr("class", "link");
+                const node = svg.append("g").selectAll("circle").data(data.nodes).enter().append("circle")
+                    .attr("r", d => d.group === 1 ? 8 : 5).attr("fill", d => d.group === 1 ? "#2563EB" : "#94A3B8")
+                    .attr("class", "node").call(d3.drag().on("start", (event, d) => { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }).on("drag", (event, d) => { d.fx = event.x; d.fy = event.y; }).on("end", (event, d) => { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
+                const text = svg.append("g").selectAll("text").data(data.nodes).enter().append("text").attr("class", "node-text").attr("x", 8).attr("y", "0.31em").text(d => d.id);
+                node.append("title").text(d => d.id);
+                simulation.on("tick", () => {
+                    link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+                    node.attr("cx", d => d.x).attr("cy", d => d.y);
+                    text.attr("transform", d => `translate(${d.x},${d.y})`);
+                });
+            }, [data]);
+            return <svg ref={svgRef}></svg>;
+        };
         
-        // --- WEBSITE COMPONENTS (UNCHANGED) ---
+        // --- WEBSITE COMPONENTS ---
         const Header = ({ setRoute }) => (
             <header className="bg-white/90 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200">
                 <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -584,574 +565,704 @@
             );
         };
         
-        // --- START: INTEGRATED GEO STUDIO COMPONENT ---
-        const GeoStudioComponent = () => {
-            const [apiKey, setApiKey] = useState('');
-            const [tempApiKey, setTempApiKey] = useState('');
+        // --- DYNAMIC GEO COMPONENTS ---
+        const KnowledgePanelSimulator = ({ data }) => {
+            if (!data) return null;
+            return (
+                <div className="fade-in">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-1 bg-white p-5 rounded-xl shadow-sm border">
+                            {data.logo && <img src={data.logo} alt={`${data.name} logo`} className="w-16 h-16 rounded-lg shadow-md mb-4 bg-gray-100" onError={(e) => e.target.style.display='none'} />}
+                            <h2 className="text-xl font-bold text-gray-800">{data.name || "Brand Name"}</h2>
+                            <p className="text-gray-600 mt-2 text-sm">{data.description || "No description found."}</p>
+                            <div className="mt-5 space-y-3">
+                                {Array.isArray(data.attributes) && data.attributes.map(attr => (
+                                    <div key={attr.label}>
+                                        <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider">{attr.label}</p>
+                                        <p className="text-gray-900 text-sm">{attr.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="lg:col-span-2 bg-white p-5 rounded-xl shadow-sm border">
+                            <h3 className="font-semibold text-lg mb-4">Entity Completeness Analysis</h3>
+                            <div className="flex justify-between items-center mb-1 text-sm">
+                                <span className="font-medium text-gray-700">Overall Score</span>
+                                <span className="font-bold text-indigo-600">{data.completeness || 0}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${data.completeness || 0}%` }}></div>
+                            </div>
+                            <div className="mt-6">
+                                <h4 className="font-semibold text-gray-800 mb-3">Actionable Gaps</h4>
+                                <ul className="space-y-3">
+                                    {data.gaps && data.gaps.length > 0 ? data.gaps.map((gap, i) => (
+                                        <li key={i} className="p-3 bg-gray-50 rounded-lg">
+                                            <p className="font-medium text-red-700 text-sm">{gap.issue}</p>
+                                            <p className="text-xs text-gray-600 mt-1">{gap.suggestion}</p>
+                                        </li>
+                                    )) : <p className="text-sm text-gray-500">No major gaps identified.</p>}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        )};
+        const AiCrawlerAudit = ({ data }) => {
+            if (!data) return null;
+            const StatusIcon = ({ status }) => {
+                const statusClasses = { pass: 'bg-green-100 text-green-800', warning: 'bg-yellow-100 text-yellow-800', fail: 'bg-red-100 text-red-800' };
+                return <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusClasses[status]}`}>{status}</span>;
+            };
+            return (
+                 <div className="fade-in">
+                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 bg-white p-5 rounded-xl shadow-sm border">
+                            <h3 className="font-semibold text-lg mb-4">Technical Checks</h3>
+                            <table className="w-full text-sm">
+                                <tbody>
+                                {data.checks && data.checks.map((check, i) => (
+                                    <tr key={i} className="border-b">
+                                        <td className="py-3 pr-3">
+                                            <p className="font-medium text-gray-800">{check.name}</p>
+                                            <p className="text-xs text-gray-600">{check.details}</p>
+                                        </td>
+                                        <td className="py-3 text-right"><StatusIcon status={check.status} /></td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="lg:col-span-1 bg-white p-5 rounded-xl shadow-sm border">
+                             <h3 className="font-semibold text-lg mb-4">Predicted Authoritative Citations</h3>
+                             <ul className="space-y-3">
+                                {data.citations && data.citations.length > 0 ? data.citations.map((cite, i) => (
+                                    <li key={i}>
+                                        <p className="font-medium text-gray-800 text-sm">{cite.source}</p>
+                                        <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                            <div title={`Authority: ${cite.authority}%`} className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${cite.authority}%` }}></div>
+                                        </div>
+                                    </li>
+                                )) : <p className="text-sm text-gray-500">No major citations predicted.</p>}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        const BrandSerpAnalysis = ({ data }) => {
+            if (!data) return null;
+            const sentimentColors = { Positive: 'bg-green-500', Neutral: 'bg-gray-500', Negative: 'bg-red-500' };
+            const sentimentCounts = data.results ? data.results.reduce((acc, curr) => {
+                acc[curr.sentiment] = (acc[curr.sentiment] || 0) + 1;
+                return acc;
+            }, {}) : {};
+            return (
+                 <div className="fade-in">
+                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2">
+                             <div className="bg-white p-5 rounded-xl shadow-sm border">
+                                <h3 className="font-semibold text-lg mb-4">Simulated Search Results</h3>
+                                <div className="space-y-3">
+                                    {data.results && data.results.map((res, i) => (
+                                        <div key={i} className="flex items-start text-sm">
+                                            <div className={`w-2 h-2 rounded-full ${sentimentColors[res.sentiment]} mr-3 mt-1.5 flex-shrink-0`}></div>
+                                            <div>
+                                                <p className="font-medium text-blue-700">{res.title}</p>
+                                                <p className="text-xs text-gray-500 truncate">{res.url}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                         <div className="lg:col-span-1">
+                            <div className="bg-white p-5 rounded-xl shadow-sm border">
+                                <h3 className="font-semibold text-lg mb-4">Sentiment Overview</h3>
+                               {Object.keys(sentimentCounts).length > 0 ? (
+                                    <ChartComponent type="doughnut"
+                                        data={{
+                                            labels: Object.keys(sentimentCounts),
+                                            datasets: [{ data: Object.values(sentimentCounts), backgroundColor: ['#22c55e', '#6b7280', '#ef4444'], borderColor: '#fff', borderWidth: 2, }]
+                                        }}
+                                        options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }}
+                                        className="!h-64"
+                                    />
+                               ) : <p className="text-sm text-gray-500 text-center pt-10">No sentiment data to display.</p>}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        const ContentStudio = ({ apiKey, callGeminiApi }) => {
+            const [isLoading, setIsLoading] = useState(false);
             const [mode, setMode] = useState('brief');
             const [briefKeyword, setBriefKeyword] = useState('');
-            const [isLoading, setIsLoading] = useState(false);
+            const [brandVoiceSample, setBrandVoiceSample] = useState('');
+            const [brandVoiceFingerprint, setBrandVoiceFingerprint] = useState(null);
             const [briefData, setBriefData] = useState(null);
+            const [auditSuggestions, setAuditSuggestions] = useState([]);
             const [editorContent, setEditorContent] = useState('');
-            const [analysisContent, setAnalysisContent] = useState('');
+            const [scores, setScores] = useState({ total: 0, structure: 0, keywords: 0, readability: 0, entropy: 0, voice: 0 });
             const [wordCount, setWordCount] = useState(0);
-            const [readability, setReadability] = useState({ score: 0, label: 'N/A' });
-            const [geoScore, setGeoScore] = useState(0);
-            const editorRef = useRef(null);
-            const analysisEditorRef = useRef(null);
 
-            useEffect(() => {
-                const savedKey = sessionStorage.getItem('geminiApiKey_adsight');
-                if (savedKey) {
-                    setApiKey(savedKey);
-                    setTempApiKey(savedKey);
+             const handleGenerateBrief = async () => {
+                if (!briefKeyword || !apiKey) { 
+                    alert("Please provide a keyword and ensure your API key is set.");
+                    return;
                 }
-            }, []);
-
-            const handleSaveKey = () => {
-                sessionStorage.setItem('geminiApiKey_adsight', tempApiKey);
-                setApiKey(tempApiKey);
-                alert('API Key saved for this session.');
-            };
-
-            const debounce = (func, delay) => {
-                let timeout;
-                return (...args) => {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func(...args), delay);
-                };
-            };
-            
-            const callGeminiApi = async (prompt, retries = 2, delay = 1000) => {
-                const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-                const isJsonPrompt = prompt.includes("Respond ONLY with a JSON");
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        temperature: 0.2,
-                        maxOutputTokens: 2048,
-                        responseMimeType: isJsonPrompt ? "application/json" : "text/plain"
-                    }
-                };
-
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                    const data = await response.json();
-                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-                        return data.candidates[0].content.parts[0].text;
-                    }
-                    throw new Error("Invalid response structure from API.");
-                } catch (error) {
-                    if (retries > 0) {
-                        await new Promise(res => setTimeout(res, delay));
-                        return callGeminiApi(prompt, retries - 1, delay * 2);
-                    }
-                    throw error;
-                }
-            };
-            
-            const handleGenerateBrief = async () => {
-                if (!briefKeyword || !apiKey) return;
                 setIsLoading(true);
                 setBriefData(null);
                 setEditorContent('');
-                
                 try {
-                    const [competitors, outline, entities] = await Promise.all([
-                        callGeminiApi(`Simulate a SERP for "${briefKeyword}". Generate a summary for the top 3 ranking articles. For each, provide a title, a 2-sentence summary, an estimated word count (800-2000), and a GEO score (60-95). Respond ONLY with a JSON array of objects with keys: "title", "summary", "wordCount", "geoScore".`),
-                        callGeminiApi(`Generate a comprehensive content outline for an article about "${briefKeyword}". Include H2 and H3 headings. Format as an HTML unordered list with nested lists.`),
-                        callGeminiApi(`List the top 15 most important semantic keywords and entities for an article about "${briefKeyword}". Respond ONLY with a JSON array of strings.`),
+                    const [simulatedAnswer, entities, voice, paa] = await Promise.all([
+                        callGeminiApi(apiKey, `Simulate a comprehensive, helpful AI answer for the query "${briefKeyword}". The answer should be well-structured and approximately 200 words.`, false),
+                        callGeminiApi(apiKey, `Analyze the topic "${briefKeyword}". Identify the central entity and 8-10 related sub-entities. Respond ONLY with a JSON object containing two keys: "nodes" (an array of objects with "id" and "group" where the central is group 1) and "links" (an array of objects with "source" and "target" IDs).`),
+                        brandVoiceSample ? callGeminiApi(apiKey, `Analyze the following text and create a "Brand Voice Fingerprint". Describe the tone, style, complexity, and key terminology in a concise paragraph. \n\nTEXT:\n${brandVoiceSample}`, false) : Promise.resolve(null),
+                        callGeminiApi(apiKey, `Analyze the Google SERP for "${briefKeyword}". Identify the top 4 "People Also Ask" questions. Respond ONLY with a JSON array of strings.`)
                     ]);
-                    
-                    setBriefData({
-                        competitors: JSON.parse(competitors),
-                        outline,
-                        keywords: JSON.parse(entities)
-                    });
+                    const competitorsText = await callGeminiApi(apiKey, `Provide the raw text content for the top 2 ranking articles for "${briefKeyword}". Combine them into a single block of text for analysis.`, false);
+                    setBriefData({ simulatedAnswer, knowledgeGraph: entities, competitorsText, paa });
+                    if (voice) setBrandVoiceFingerprint(voice);
                 } catch(error) {
-                    console.error('Brief generation failed:', error);
                     alert('Brief generation failed. Please check your API key and the console for details.');
                 } finally {
                     setIsLoading(false);
                 }
             };
 
-            const calculateReadability = (content) => {
+            const handleAuditContent = async () => {
+                if (editorContent.length < 50 || !apiKey) return;
+                setIsLoading(true);
+                setAuditSuggestions([]);
+                try {
+                    const prompt = `Analyze the following text. Identify up to 3 sentences that are written in passive voice or are overly long and complex. For each, provide the original sentence and a suggested rewrite to make it more direct and clear. Respond ONLY with a JSON array of objects with keys: "original", "suggestion".\n\nTEXT:\n${editorContent}`;
+                    const suggestionsJson = await callGeminiApi(apiKey, prompt);
+                    setAuditSuggestions(suggestionsJson);
+                } catch (error) {
+                    alert('Content audit failed. Please check the console for details.');
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            const applySuggestion = (original, suggestion) => {
+                const newContent = editorContent.replace(original, suggestion);
+                setEditorContent(newContent);
+            };
+
+            const calculateScores = useCallback((content) => {
                 const words = content.match(/\b\w+\b/g) || [];
-                const sentences = content.split(/[.!?]+/).filter(Boolean);
-                if (words.length < 20 || sentences.length < 2) return { score: 0, label: 'N/A' };
-                const syllableCount = (content.match(/[aeiouy]{1,2}/gi) || []).length;
-                const gradeLevel = 0.39 * (words.length / sentences.length) + 11.8 * (syllableCount / words.length) - 15.59;
-                
-                let label = 'Very Difficult';
-                if (gradeLevel < 5) label = "Very Easy";
-                else if (gradeLevel < 8) label = "Easy";
-                else if (gradeLevel < 11) label = "Standard";
-                else if (gradeLevel < 13) label = "Difficult";
-                return { score: Math.max(0, 100 - (gradeLevel * 5)), label };
-            };
+                const wordCount = words.length;
+                setWordCount(wordCount);
 
-            const calculateGeoScore = (content, readability, keywords) => {
-                let score = 0;
-                const contentLower = content.toLowerCase();
-                score += readability.score * 0.20; // Readability Score (20%)
-                if (keywords && keywords.length > 0) {
-                    const usedKeywords = keywords.filter(k => contentLower.includes(k.toLowerCase())).length;
-                    score += (usedKeywords / keywords.length) * 40; // Keyword Usage (40%)
+                if (wordCount < 10) {
+                    setScores({ total: 0, structure: 0, keywords: 0, readability: 0, entropy: 0, voice: 0 });
+                    return;
                 }
-                const h1Count = (content.match(/^#\s/gm) || []).length;
-                const h2Count = (content.match(/^##\s/gm) || []).length;
-                if (h1Count === 1) score += 5;
-                if (h2Count > 2) score += 10;
-                if ((content.split(/\n\s*\n/).length) > 5) score += 10; // Structural elements (25%)
-                const wordCount = (content.match(/\b\w+\b/g) || []).length;
-                if (wordCount > 500) score += 5;
-                if (wordCount > 1000) score += 5;
-                if (wordCount > 1500) score += 5; // Word count (15%)
-                return Math.min(100, Math.round(score));
-            };
 
-            const updateMetrics = (content, editorType) => {
-                const words = (content.match(/\b\w+\b/g) || []).length;
-                const read = calculateReadability(content);
-                const score = calculateGeoScore(content, read, editorType === 'brief' ? briefData?.keywords : []);
+                const getStructureScore = () => {
+                    let score = 0;
+                    const h2Count = (content.match(/^##\s/gm) || []).length;
+                    if (h2Count >= 2) score += 50;
+                    if (wordCount > 1000) score += 50;
+                    return Math.min(100, score);
+                };
+
+                const getKeywordsScore = () => {
+                    if (!briefData?.knowledgeGraph?.nodes?.length) return 0;
+                    const contentLower = content.toLowerCase();
+                    const usedKeywords = briefData.knowledgeGraph.nodes.filter(node => contentLower.includes(node.id.toLowerCase())).length;
+                    return (usedKeywords / briefData.knowledgeGraph.nodes.length) * 100;
+                };
+
+                const getReadabilityScore = () => {
+                    const sentences = content.split(/[.!?]+/).filter(Boolean);
+                    const syllableCount = (content.match(/[aeiouy]{1,2}/gi) || []).length;
+                    if (sentences.length < 2 || wordCount < 20) return 0;
+                    const gradeLevel = 0.39 * (wordCount / sentences.length) + 11.8 * (syllableCount / wordCount) - 15.59;
+                    return Math.max(0, Math.min(100, 100 - (gradeLevel * 5)));
+                };
+
+                const getEntropyScore = () => {
+                    if (!briefData?.competitorsText) return 0;
+                    const contentSet = new Set(content.toLowerCase().split(/\s+/));
+                    if (contentSet.size === 0) return 0;
+                    const competitorSet = new Set(briefData.competitorsText.toLowerCase().split(/\s+/));
+                    const difference = new Set([...contentSet].filter(x => !competitorSet.has(x)));
+                    return Math.min(100, (difference.size / contentSet.size) * 200);
+                };
                 
-                setWordCount(words);
-                setReadability(read);
-                setGeoScore(score);
+                const getVoiceScore = () => {
+                    if (!brandVoiceFingerprint || !brandVoiceSample) return 0;
+                    const lengthRatio = 1 - (Math.abs(content.length - brandVoiceSample.length) / Math.max(content.length, brandVoiceSample.length));
+                    return Math.max(0, Math.min(100, lengthRatio * 100));
+                };
 
-                if (editorType === 'analysis') {
-                    // Placeholder for future live analysis suggestions
-                }
-            };
+                const structure = getStructureScore();
+                const keywords = getKeywordsScore();
+                const readability = getReadabilityScore();
+                const entropy = getEntropyScore();
+                const voice = getVoiceScore();
+                const total = (structure * 0.2) + (keywords * 0.3) + (readability * 0.2) + (entropy * 0.2) + (voice * 0.1);
+
+                setScores({
+                    total: Math.round(total), structure: Math.round(structure),
+                    keywords: Math.round(keywords), readability: Math.round(readability),
+                    entropy: Math.round(entropy), voice: Math.round(voice),
+                });
+            }, [briefData, brandVoiceFingerprint, brandVoiceSample]);
             
-            const debouncedUpdate = useMemo(() => debounce(updateMetrics, 500), [briefData]);
+            const debouncedCalculateScores = useMemo(() => { let timeout; return (content) => { clearTimeout(timeout); timeout = setTimeout(() => calculateScores(content), 500); }; }, [calculateScores]);
 
-            const handleEditorInput = (e, editorType) => {
+            const handleEditorInput = (e) => {
                 const content = e.target.innerText;
-                if (editorType === 'brief') setEditorContent(content);
-                else setAnalysisContent(content);
-                debouncedUpdate(content, editorType);
-            };
-            
-            const KeywordChecklist = ({ keywords, content }) => {
-                const contentLower = content.toLowerCase();
-                return (
-                    <ul className="space-y-1 text-sm">
-                        {keywords.map(k => (
-                            <li key={k} className={`transition-colors ${contentLower.includes(k.toLowerCase()) ? 'text-green-400 line-through' : 'text-gray-400'}`}>
-                                {k}
-                            </li>
-                        ))}
-                    </ul>
-                );
+                setEditorContent(content);
+                debouncedCalculateScores(content);
             };
 
-            const Section = ({ title, children }) => (
-                <div className="geo-fade-in">
-                    <h3 className="text-base font-semibold text-white mb-3">{title}</h3>
-                    <div className="prose prose-sm prose-invert max-w-none text-gray-300">{children}</div>
+            const ScoreBar = ({ score, label }) => (
+                <div>
+                    <div className="flex justify-between items-center mb-1"><span className="text-sm font-medium text-gray-500">{label}</span><span className="text-sm font-bold text-gray-800">{score}/100</span></div>
+                    <div className="w-full bg-gray-200 rounded-full h-2"><div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${score}%` }}></div></div>
                 </div>
             );
 
             return (
-                <div className="p-6 geo-studio-container">
-                    <div className="geo-main-grid">
-                        <aside className="geo-sidebar geo-card flex flex-col gap-6">
-                            <div>
-                                <h2 className="text-lg font-semibold text-white mb-3">GEO Studio Controls</h2>
-                                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-900 rounded-lg">
-                                    <button onClick={() => setMode('brief')} className={`geo-mode-btn rounded-md py-2 text-sm font-semibold ${mode === 'brief' ? 'active' : ''}`}>Content Brief</button>
-                                    <button onClick={() => setMode('analysis')} className={`geo-mode-btn rounded-md py-2 text-sm font-semibold ${mode === 'analysis' ? 'active' : ''}`}>Analysis</button>
+                <div className="geo-studio-container rounded-lg h-[calc(100vh-10rem)] fade-in">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 h-full">
+                        <aside className="geo-card flex flex-col gap-4">
+                             <div>
+                                <h1 className="text-xl font-bold text-gray-800 mb-2">Content Studio</h1>
+                                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-lg">
+                                    <button onClick={() => setMode('brief')} className={`rounded-md py-2 text-sm font-semibold ${mode === 'brief' ? 'bg-indigo-600 text-white' : 'text-gray-600'}`}>Content Brief</button>
+                                    <button onClick={() => setMode('audit')} className={`rounded-md py-2 text-sm font-semibold ${mode === 'audit' ? 'bg-indigo-600 text-white' : 'text-gray-600'}`}>Content Audit</button>
                                 </div>
                             </div>
                             
-                            <div className="flex items-end gap-2">
-                                <div className="flex-grow">
-                                    <label className="block text-xs font-medium text-gray-400 mb-1">Gemini API Key</label>
-                                    <input type="password" value={tempApiKey} onChange={e => setTempApiKey(e.target.value)} className="geo-text-input w-full"/>
+                            {mode === 'brief' && <div className="space-y-3">
+                                <h3 className="font-semibold text-gray-800">New Content Brief</h3>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">Target Keyword</label>
+                                    <input type="text" value={briefKeyword} onChange={e => setBriefKeyword(e.target.value)} className="geo-text-input" placeholder="e.g., 'quantum computing'"/>
                                 </div>
-                                <button onClick={handleSaveKey} className="geo-btn-primary">Save</button>
-                            </div>
-
-                            {mode === 'brief' && (
-                                <div className="space-y-4">
-                                    <h3 className="text-base font-semibold text-white">New Content Brief</h3>
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-400 mb-1">Target Keyword</label>
-                                        <input type="text" value={briefKeyword} onChange={e => setBriefKeyword(e.target.value)} className="geo-text-input w-full" placeholder="e.g., 'urban beekeeping'"/>
-                                    </div>
-                                    <button onClick={handleGenerateBrief} disabled={!apiKey || isLoading} className="geo-btn-primary w-full justify-center">
-                                        <Icon name="sparkles" className="w-4 h-4" />
-                                        <span>{isLoading ? 'Generating...' : 'Generate Brief'}</span>
-                                    </button>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">Brand Voice Sample (Optional)</label>
+                                    <textarea value={brandVoiceSample} onChange={e => setBrandVoiceSample(e.target.value)} className="geo-textarea" rows="2" placeholder="Paste a paragraph of your ideal writing style..."></textarea>
                                 </div>
-                            )}
+                                <button onClick={handleGenerateBrief} disabled={!apiKey || isLoading} className="geo-btn-primary w-full"><Icon name="sparkles" /><span>{isLoading ? 'Generating...' : 'Generate Brief'}</span></button>
+                            </div>}
 
-                            {mode === 'analysis' && (
-                                <div className="space-y-4">
-                                    <h3 className="text-base font-semibold text-white">Live Analysis</h3>
-                                    <p className="text-sm text-gray-400">Paste your content in the editor to get a live score and detailed analysis.</p>
+                            {mode === 'audit' && <div className="space-y-3">
+                                 <h3 className="font-semibold text-gray-800">Content Audit</h3>
+                                <p className="text-sm text-gray-500">Audit the content in the editor to get AI-powered suggestions for improvement.</p>
+                                <button onClick={handleAuditContent} disabled={!apiKey || isLoading} className="geo-btn-primary w-full"><span>{isLoading ? 'Auditing...' : 'Audit Content'}</span></button>
+                            </div>}
+
+                             <div className="border-t border-gray-200 pt-3 mt-auto space-y-3">
+                                <div className="flex justify-between items-baseline"><h3 className="font-semibold text-gray-800">Live GEO Score</h3><span className="text-3xl font-black text-gray-800">{scores.total}<span className="text-xl text-gray-400">/100</span></span></div>
+                                <div className="space-y-2">
+                                    <ScoreBar score={scores.structure} label="Structure" />
+                                    <ScoreBar score={scores.keywords} label="Keywords" />
+                                    <ScoreBar score={scores.readability} label="Readability" />
+                                    <ScoreBar score={scores.entropy} label="Content Entropy" />
+                                    <ScoreBar score={scores.voice} label="Brand Voice" />
                                 </div>
-                            )}
-
-                             <div className="border-t border-gray-700 pt-4 mt-auto">
-                                <h3 className="font-semibold text-white mb-3">Live Metrics</h3>
-                                <div className="space-y-3 text-sm">
-                                    <div className="flex justify-between items-center"><span className="text-gray-400">Word Count</span><span className="font-semibold">{wordCount}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-gray-400">Readability</span><span className="font-semibold">{readability.label}</span></div>
-                                </div>
-                            </div>
-
-                             <div className="pt-4 border-t border-gray-700 text-center">
-                                 <h3 className="font-semibold text-white mb-2">GEO Score</h3>
-                                 <svg className="mx-auto" width="120" height="120" viewBox="0 0 120 120">
-                                    <circle className="geo-score-circle-bg" cx="60" cy="60" r="54" fill="none" strokeWidth="12"></circle>
-                                    <circle className="geo-score-circle-fg" cx="60" cy="60" r="54" fill="none" strokeWidth="12" pathLength="100" strokeDasharray="100" style={{strokeDashoffset: 100 - geoScore}} transform="rotate(-90 60 60)"></circle>
-                                    <text className="geo-score-text" x="60" y="68" textAnchor="middle">{geoScore}</text>
-                                </svg>
+                                <div className="text-center text-xs text-gray-500 pt-1">Word Count: {wordCount}</div>
                             </div>
                         </aside>
-
-                        <main className="geo-main-content">
-                             {mode === 'brief' && (
-                                <>
-                                    {!briefData && !isLoading && (
-                                        <div className="h-full flex flex-col justify-center items-center text-center text-gray-500">
-                                            <h2 className="text-xl font-semibold text-white">Content Brief Generator</h2>
-                                            <p className="mt-2 max-w-md">Enter a keyword to generate a content plan, analyze competitors, and start writing.</p>
-                                        </div>
-                                    )}
-                                    {isLoading && <div className="h-full flex justify-center items-center"><div className="geo-loader"></div></div>}
-                                    {briefData && (
-                                        <div className="geo-editor-grid">
-                                            <div className="geo-editor-pane geo-card"><div ref={editorRef} onInput={e => handleEditorInput(e, 'brief')} contentEditable="true" className="geo-interactive-editor"></div></div>
-                                            <div className="geo-sidebar geo-card space-y-6">
-                                                <Section title="Competitor Analysis">
-                                                    {briefData.competitors.map(c => (
-                                                        <div key={c.title} className="p-3 bg-gray-900 rounded-lg">
-                                                            <h4 className="font-semibold text-indigo-400 text-sm">{c.title}</h4>
-                                                            <p className="text-xs text-gray-400 mt-1">{c.summary}</p>
-                                                            <div className="flex justify-between text-xs mt-2 text-gray-300">
-                                                                <span>~{c.wordCount} words</span>
-                                                                <span className="font-bold">Score: {c.geoScore}</span>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </Section>
-                                                <Section title="Suggested Outline"><div dangerouslySetInnerHTML={{ __html: briefData.outline }}></div></Section>
-                                                <Section title="Keywords & Entities"><KeywordChecklist keywords={briefData.keywords} content={editorContent} /></Section>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                             {mode === 'analysis' && (
-                                <div className="h-full">
-                                    <div className="h-full geo-editor-grid">
-                                        <div className="geo-editor-pane geo-card">
-                                            <div ref={analysisEditorRef} onInput={e => handleEditorInput(e, 'analysis')} contentEditable="true" className="geo-interactive-editor h-full" placeholder="Paste your content here for analysis..."></div>
-                                        </div>
-                                        <div className="geo-sidebar geo-card space-y-6">
-                                            <h2 className="text-lg font-semibold text-white">Analysis</h2>
-                                            <p className="text-sm text-gray-400">Your content analysis will appear here once you start typing or paste your text.</p>
-                                            {/* In a real app, AI suggestions would be fetched and displayed here */}
-                                        </div>
+                        
+                        <main className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+                             <div className="geo-card p-0 h-full"><div onInput={handleEditorInput} contentEditable="true" className="geo-interactive-editor h-full" data-placeholder="Your AI-optimized content will be crafted here..."></div></div>
+                             <div className="geo-card space-y-4 overflow-y-auto">
+                                {isLoading && <div className="h-full flex justify-center items-center"><div className="loader"></div></div>}
+                                
+                                {mode === 'brief' && !briefData && !isLoading && <div className="text-center text-gray-500 pt-10">Your predictive analysis and content models will appear here.</div>}
+                                {mode === 'brief' && briefData && (
+                                    <>
+                                        <div><h3 className="text-base font-semibold text-gray-800 mb-2">Predictive Answer Simulation</h3><div className="p-3 bg-gray-50 rounded-lg text-sm italic text-gray-600">{briefData.simulatedAnswer}</div></div>
+                                        {briefData.paa && <div><h3 className="text-base font-semibold text-gray-800 mb-2">People Also Ask</h3><ul className="list-disc list-inside text-sm text-gray-600 space-y-1">{briefData.paa.map(q => <li key={q}>{q}</li>)}</ul></div>}
+                                        {brandVoiceFingerprint && <div><h3 className="text-base font-semibold text-gray-800 mb-2">Brand Voice Fingerprint</h3><div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"><Icon name="fingerprint" className="text-indigo-600 w-8 h-8 flex-shrink-0 mt-1" /><p className="text-xs text-gray-600">{brandVoiceFingerprint}</p></div></div>}
+                                        <div><h3 className="text-base font-semibold text-gray-800 mb-2">Knowledge Graph</h3><div className="bg-gray-50 rounded-lg flex justify-center items-center"><KnowledgeGraph data={briefData.knowledgeGraph} /></div></div>
+                                    </>
+                                )}
+                                {mode === 'audit' && !auditSuggestions.length && !isLoading && <div className="text-center text-gray-500 pt-10">Audit suggestions will appear here.</div>}
+                                {mode === 'audit' && auditSuggestions.length > 0 && <div>{auditSuggestions.map((s, i) => (
+                                    <div key={i} className="p-3 bg-gray-50 rounded-lg mb-3">
+                                        <p className="text-xs text-red-600 border-l-2 border-red-400 pl-2 mb-2 italic">"{s.original}"</p>
+                                        <p className="text-xs text-green-600 border-l-2 border-green-400 pl-2">"{s.suggestion}"</p>
+                                        <button onClick={() => applySuggestion(s.original, s.suggestion)} className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1 px-3 rounded-full mt-3">Accept Fix</button>
                                     </div>
-                                </div>
-                             )}
+                                ))}</div>}
+
+                            </div>
                         </main>
                     </div>
                 </div>
             );
         };
-        // --- END: INTEGRATED GEO STUDIO COMPONENT ---
-
-        const ClientDashboard = ({ setRoute }) => {
+        // --- MAIN CLIENT DASHBOARD ---
+        const ClientDashboard = ({ setRoute, clientToView, backToCompanyDash }) => {
+            const [apiKey, setApiKey] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState('');
+            const [analysisData, setAnalysisData] = useState(null);
             const [activeTab, setActiveTab] = useState('overview');
-            const [services, setServices] = useState(mockData.clientServices['client_innovate_corp']);
+            const [brandGeoSubTab, setBrandGeoSubTab] = useState('entity');
+            const [websiteUrl, setWebsiteUrl] = useState('');
+            const [isApiModalOpen, setIsApiModalOpen] = useState(false);
+            const isMounted = useRef(true);
 
-            const toggleAddon = (addonName) => {
-                setServices(prev => ({
-                    ...prev,
-                    addons: prev.addons.map(a => a.name === addonName ? {...a, active: !a.active} : a)
-                }));
+            useEffect(() => {
+                isMounted.current = true;
+                const savedKey = localStorage.getItem('geminiApiKey_adsight');
+                if(savedKey) setApiKey(savedKey);
+                if(clientToView?.url) {
+                    setWebsiteUrl(clientToView.url);
+                    if(savedKey) {
+                        handleAnalyze(clientToView.url, savedKey);
+                    }
+                }
+                return () => {
+                    isMounted.current = false;
+                }
+            }, [clientToView]);
+
+            const callGeminiApi = useCallback(async (currentApiKey, prompt, isJson = true) => {
+                if (!currentApiKey) throw new Error("API Key is not set.");
+                const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${currentApiKey}`;
+                const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 8192, responseMimeType: isJson ? "application/json" : "text/plain" } };
+                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                     const parsedText = data.candidates[0].content.parts[0].text;
+                     return isJson ? JSON.parse(parsedText) : parsedText;
+                }
+                throw new Error("Invalid response structure from API.");
+            }, []);
+            
+            const handleAnalyze = async (url, key) => {
+                if (!url || !key) {
+                    setError('Please provide both a URL and an API Key.');
+                    return;
+                }
+
+                let fullUrl = url;
+                if (!/^https?:\/\//i.test(url)) {
+                    fullUrl = 'https://' + url;
+                }
+
+                setIsLoading(true);
+                setError('');
+                
+                const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(fullUrl)}`;
+                
+                try {
+                    const response = await fetch(PROXY_URL);
+                    if (!response.ok) throw new Error('Failed to fetch website content.');
+                    let textContent = await response.text();
+                    textContent = textContent.replace(/<style[^>]*>.*<\/style>/gs, '').replace(/<script[^>]*>.*<\/script>/gs, '').replace(/<[^>]+>/g, ' ').replace(/\s\s+/g, ' ').substring(0, 8000);
+                    
+                    let brandName;
+                    try {
+                        brandName = new URL(fullUrl).hostname.replace('www.', '').split('.')[0];
+                    } catch (e) {
+                        throw new Error("Invalid URL format. Please enter a valid website address.");
+                    }
+
+                    const [panelData, auditData, serpData] = await Promise.all([
+                        callGeminiApi(key, `Analyze the content for "${brandName}". Generate a Knowledge Panel. Extract: [name, description, logo_url, founders, key_products]. Respond ONLY with a JSON object with keys: 'name', 'logo', 'description', 'attributes' (as an array of {label, value}), 'completeness' (0-100), 'gaps' (array of {issue, suggestion}). \n\nCONTENT: ${textContent}`),
+                        callGeminiApi(key, `Analyze "${fullUrl}". Check for AI readiness: pricing, contact info. Predict 3 authoritative citations. Respond ONLY with a JSON object with keys: 'checks' (array of {name, status, details}) and 'citations' (array of {source, authority}).\n\nCONTENT: ${textContent}`),
+                        callGeminiApi(key, `Simulate the top 5 search results for "${brandName}". Provide 'title', 'url', and 'sentiment' (Positive, Neutral, or Negative). Respond ONLY with a JSON array under a 'results' key.`)
+                    ]);
+                    
+                    const newData = { panelData, auditData, serpData, brandName, url: fullUrl };
+                    if (isMounted.current) {
+                        setAnalysisData(newData);
+                        const allAnalyses = JSON.parse(localStorage.getItem('adsight_analyses')) || {};
+                        allAnalyses[brandName] = newData;
+                        localStorage.setItem('adsight_analyses', JSON.stringify(allAnalyses));
+                        setActiveTab('brandGeo');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    if (isMounted.current) setError(`Analysis failed: ${e.message}.`);
+                } finally {
+                    if (isMounted.current) setIsLoading(false);
+                }
             };
             
-            const availableAddons = [
-                { name: 'Advanced Competitor API Access', price: 199, description: 'Unlock raw data access to track competitor GAIO performance.'},
-                { name: 'Weekly Strategy Calls', price: 299, description: 'A dedicated weekly session with a GAIO specialist.'}
-            ];
+            const StatCard = ({ icon, label, value, change }) => {
+                return (
+                    <div className="bg-white p-6 rounded-xl shadow-sm border">
+                        <div className="flex justify-between items-start"><h3 className="text-sm font-medium text-gray-500">{label}</h3><Icon name={icon} className="text-gray-400"/></div>
+                        <p className="text-3xl font-bold text-gray-800 mt-2">{value}</p>
+                        {change && <p className={`text-sm mt-1 ${change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>{change}</p>}
+                    </div>
+                );
+            };
+            
+            const AnalysisInputScreen = () => (
+                <div className="text-center max-w-lg mx-auto pt-20">
+                    <h1 className="text-3xl font-bold text-gray-800">Brand GEO Analysis</h1>
+                    <p className="mt-4 text-gray-600">Enter a website URL to run a complete analysis of the brand's digital entity.</p>
+                     <div className="mt-8 space-y-4">
+                        <input type="url" value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} placeholder="https://www.yourwebsite.com" className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                     </div>
+                    <button onClick={() => { handleAnalyze(websiteUrl, apiKey); }} disabled={isLoading || !apiKey} className="mt-6 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors text-lg flex justify-center items-center disabled:bg-indigo-400" title={!apiKey ? "Please set your API Key in Settings first" : ""}>
+                        {isLoading ? <div className="loader !w-6 !h-6 !border-t-white !border-4"></div> : "Analyze Website"}
+                    </button>
+                    {!apiKey && <p className="text-sm text-yellow-600 mt-3">Please set your Gemini API Key in the top-right settings before running an analysis.</p>}
+                    {error && <p className="text-red-600 text-sm mt-4">{error}</p>}
+                </div>
+            );
 
-            const clientTasks = mockData.optimizationTasks['client_innovate_corp'] || [];
+            const BrandGeoDashboard = () => {
+                const SubTab = ({ name, label }) => (
+                    <button onClick={() => setBrandGeoSubTab(name)} className={`px-4 py-2 text-sm font-semibold rounded-md ${brandGeoSubTab === name ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-200'}`}>{label}</button>
+                );
+                
+                const visibilityScore = analysisData ? analysisData.panelData.completeness : 0;
+                const sentimentCounts = analysisData ? (analysisData.serpData.results || []).reduce((acc, curr) => {
+                    acc[curr.sentiment] = (acc[curr.sentiment] || 0) + 1; return acc;
+                }, {}) : {};
+                const totalSentiments = Object.values(sentimentCounts).reduce((a, b) => a + b, 0);
+                const positiveSentiment = totalSentiments > 0 ? Math.round(((sentimentCounts.Positive || 0) / totalSentiments) * 100) : 0;
+
+                return (
+                    <div className="fade-in">
+                        <header className="flex justify-between items-center mb-8">
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900">{analysisData.brandName} Dashboard</h1>
+                                <p className="text-gray-500">Showing results for: <span className="font-semibold text-gray-700">{websiteUrl}</span></p>
+                            </div>
+                            <button onClick={() => setAnalysisData(null)} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800">Analyze New Site</button>
+                        </header>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <StatCard icon="users" label="Entity Score" value={visibilityScore} />
+                            <StatCard icon="trendingUp" label="Brand Sentiment" value={`${positiveSentiment}% Positive`} />
+                            <StatCard icon="barChart" label="Authoritative Citations" value={analysisData ? analysisData.auditData.citations.length : 0} />
+                            <StatCard icon="pieChart" label="Positive SERP %" value={`${Math.round(((sentimentCounts.Positive || 0) / totalSentiments) * 100)}%`} />
+                        </div>
+                        <div className="mt-8 bg-white p-6 rounded-xl border shadow-sm">
+                             <div className="flex items-center justify-between mb-4 border-b pb-4">
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Brand Analysis Tools</h2>
+                                    <p className="text-sm text-gray-500">Dive deeper into your brand's AI readiness.</p>
+                                </div>
+                                <div className="flex space-x-2 p-1 bg-gray-100 rounded-lg">
+                                    <SubTab name="entity" label="Entity Simulator" />
+                                    <SubTab name="audit" label="AI Crawler Audit" />
+                                    <SubTab name="serp" label="Brand SERP" />
+                                </div>
+                            </div>
+                            {brandGeoSubTab === 'entity' && <KnowledgePanelSimulator data={analysisData.panelData} />}
+                            {brandGeoSubTab === 'audit' && <AiCrawlerAudit data={analysisData.auditData} />}
+                            {brandGeoSubTab === 'serp' && <BrandSerpAnalysis data={analysisData.serpData} />}
+                        </div>
+                    </div>
+                );
+            };
+
+            const OverviewDashboard = () => {
+                const visibilityScore = analysisData ? analysisData.panelData.completeness : '--';
+                const sentimentCounts = analysisData ? (analysisData.serpData.results || []).reduce((acc, curr) => {
+                    acc[curr.sentiment] = (acc[curr.sentiment] || 0) + 1; return acc;
+                }, {}) : {};
+                const totalSentiments = Object.values(sentimentCounts).reduce((a, b) => a + b, 0);
+                const positiveSentiment = totalSentiments > 0 ? `${Math.round(((sentimentCounts.Positive || 0) / totalSentiments) * 100)}%` : '--';
+                const citations = analysisData ? analysisData.auditData.citations.length : '--';
+
+                return (
+                     <div className="fade-in">
+                         <header className="flex justify-between items-center mb-8">
+                            <div><h1 className="text-3xl font-bold text-gray-900">Client Overview</h1></div>
+                        </header>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <StatCard icon="users" label="Entity Score" value={visibilityScore} />
+                            <StatCard icon="trendingUp" label="Brand Sentiment" value={positiveSentiment} />
+                            <StatCard icon="barChart" label="Authoritative Citations" value={citations} />
+                            <StatCard icon="pieChart" label="Positive SERP %" value={positiveSentiment} />
+                        </div>
+                        {!analysisData && 
+                            <div className="mt-8 text-center p-12 bg-white rounded-lg border">
+                                <h2 className="text-xl font-semibold text-gray-700">No Data Yet</h2>
+                                <p className="text-gray-500 mt-2">Go to the 'Brand GEO' tab to run an analysis. The results will populate this dashboard.</p>
+                            </div>
+                        }
+                    </div>
+                )
+            };
+            
+            const ApiKeyModal = () => (
+                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setIsApiModalOpen(false)}>
+                    <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+                        <h2 className="text-2xl font-bold mb-4">API Key Settings</h2>
+                        <p className="text-gray-600 mb-4">Please enter your Google Gemini API key. This will be saved in your browser's local storage for future sessions.</p>
+                        <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="Enter your Gemini API Key" className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        <button onClick={() => { localStorage.setItem('geminiApiKey_adsight', apiKey); setIsApiModalOpen(false); alert('API Key saved!'); }} className="mt-6 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">Save Key</button>
+                    </div>
+                </div>
+            );
+
+            const renderContent = () => {
+                switch(activeTab) {
+                    case 'overview':
+                        return <OverviewDashboard />;
+                    case 'brandGeo':
+                        return analysisData ? <BrandGeoDashboard /> : <AnalysisInputScreen />;
+                    case 'contentStudio':
+                        return <ContentStudio apiKey={apiKey} callGeminiApi={callGeminiApi} />;
+                    default:
+                        return <OverviewDashboard />;
+                }
+            };
 
             return (
-                <div className="flex bg-gray-100 min-h-screen fade-in">
+                <div className="flex bg-gray-100 min-h-screen">
+                    {isApiModalOpen && <ApiKeyModal />}
                     <aside className="w-64 bg-white p-6 border-r border-gray-200 flex flex-col">
                         <div className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-                            <a href="#" onClick={(e) => { e.preventDefault(); setRoute('home'); }} className="flex items-center gap-2"><Icon name="package" /> AdSight</a>
+                             <a href="#" onClick={(e) => { e.preventDefault(); setRoute('home'); }} className="flex items-center gap-2"><Icon name="package" /> AdSight</a>
                         </div>
-                         <nav className="mt-10 space-y-2">
-                            <a href="#" onClick={(e) => {e.preventDefault(); setActiveTab('overview')}} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'overview' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>Dashboard</a>
-                            <a href="#" onClick={(e) => {e.preventDefault(); setActiveTab('workbench')}} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'workbench' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>Workbench</a>
-                            {/* --- ADDED GEO STUDIO TAB --- */}
-                            <a href="#" onClick={(e) => {e.preventDefault(); setActiveTab('geoStudio')}} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'geoStudio' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>GEO Studio</a>
-                            <a href="#" onClick={(e) => {e.preventDefault(); setActiveTab('billing')}} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'billing' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>Billing & Services</a>
+                        {clientToView && backToCompanyDash && <button onClick={backToCompanyDash} className="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">&larr; Back to Portfolio</button> }
+                        <nav className="mt-10 space-y-2">
+                             <a href="#" onClick={() => setActiveTab('overview')} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'overview' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icon name="barChart" /> Overview</a>
+                             <a href="#" onClick={() => setActiveTab('brandGeo')} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'brandGeo' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icon name="search" /> Brand GEO</a>
+                             <a href="#" onClick={() => setActiveTab('contentStudio')} className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg ${activeTab === 'contentStudio' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icon name="edit" /> Content Studio</a>
                         </nav>
-                        <div className="mt-auto p-4 bg-indigo-50 rounded-lg text-center">
-                            <h4 className="font-bold text-indigo-800">Need Help?</h4>
-                            <p className="text-sm text-indigo-700 mt-1">Contact your dedicated account manager.</p>
-                            <button className="mt-3 w-full bg-indigo-600 text-white text-sm font-bold py-2 rounded-lg hover:bg-indigo-700">Contact Support</button>
+                         <div className="mt-auto p-4">
+                           <button onClick={() => setRoute('login')} className="w-full flex items-center justify-center gap-2 bg-gray-200 text-gray-700 text-sm font-bold py-2 rounded-lg hover:bg-gray-300">
+                                <Icon name="logOut" />
+                                <span>Logout</span>
+                            </button>
                         </div>
                     </aside>
                     <main className="flex-1 p-8">
-                        {activeTab === 'overview' && 
-                            <div>
-                                <header className="flex justify-between items-center mb-8">
-                                    <div><h1 className="text-3xl font-bold text-gray-900">Welcome back, Innovate Corp</h1></div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-sm">
-                                            <select className="border-gray-300 rounded-md">
-                                                <option value="30d">Last 30 Days</option>
-                                                <option value="90d">Last 90 Days</option>
-                                            </select>
-                                        </div>
-                                        <img src="https://i.pravatar.cc/48?u=client" alt="User" className="rounded-full" />
-                                    </div>
-                                </header>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <div className="bg-white p-6 rounded-xl shadow-sm"><div className="flex justify-between items-start"><h3 className="text-sm font-medium text-gray-500">AI Visibility Score</h3><Icon name="barChart" className="text-gray-400"/></div><p className="text-3xl font-bold text-gray-800 mt-2">88</p><p className="text-sm mt-1 text-green-600">+7.3%</p></div>
-                                    <div className="bg-white p-6 rounded-xl shadow-sm"><div className="flex justify-between items-start"><h3 className="text-sm font-medium text-gray-500">AI Brand Mentions</h3><Icon name="users" className="text-gray-400"/></div><p className="text-3xl font-bold text-gray-800 mt-2">3,512</p><p className="text-sm mt-1 text-green-600">+12.5%</p></div>
-                                    <div className="bg-white p-6 rounded-xl shadow-sm"><div className="flex justify-between items-start"><h3 className="text-sm font-medium text-gray-500">Sentiment</h3><Icon name="smile" className="text-gray-400"/></div><p className="text-3xl font-bold text-gray-800 mt-2">94% Positive</p><p className="text-sm mt-1 text-green-600">+2.1%</p></div>
-                                    <div className="bg-white p-6 rounded-xl shadow-sm"><div className="flex justify-between items-start"><h3 className="text-sm font-medium text-gray-500">Share of Voice</h3><Icon name="pieChart" className="text-gray-400"/></div><p className="text-3xl font-bold text-gray-800 mt-2">55%</p><p className="text-sm mt-1 text-gray-500">#1 Position</p></div>
-                                </div>
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-                                    <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm">
-                                        <h3 className="font-semibold text-lg">AI Visibility Trend</h3>
-                                        <ChartComponent type="line" data={{labels: ['Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets:[{label: 'Score', data: [72, 78, 81, 85, 88], borderColor: '#4f46e5', tension: 0.4, fill: true, backgroundColor: 'rgba(79, 70, 229, 0.1)'}]}} options={{responsive: true, maintainAspectRatio: false}} className="dashboard-chart" />
-                                    </div>
-                                    <div className="bg-white p-6 rounded-xl shadow-sm">
-                                        <h3 className="font-semibold text-lg">Share of Voice</h3>
-                                        <ChartComponent type="doughnut" data={{labels: ['You', 'Competitor A', 'Competitor B'], datasets:[{data: [55, 30, 15], backgroundColor:['#4f46e5', '#a78bfa', '#d1d5db'], borderWidth: 0}]}} options={{responsive: true, maintainAspectRatio: false, cutout:'70%'}} className="dashboard-chart"/>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        {activeTab === 'workbench' && 
-                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">Content Optimization Workbench</h1>
-                                <p className="text-gray-500 mt-1">Your prioritized list of tasks to improve GAIO performance.</p>
-                                <div className="mt-6 bg-white rounded-xl shadow-sm">
-                                    <table className="w-full text-left">
-                                        <thead className="border-b border-gray-200">
-                                            <tr>
-                                                <th className="p-4 text-sm font-semibold text-gray-500">Topic / Task</th>
-                                                <th className="p-4 text-sm font-semibold text-gray-500">Priority</th>
-                                                <th className="p-4 text-sm font-semibold text-gray-500">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {clientTasks.map(task => (
-                                                <tr key={task.id} className="border-b border-gray-200 hover:bg-gray-50">
-                                                    <td className="p-4 font-medium text-gray-800">{task.topic}</td>
-                                                    <td className="p-4">
-                                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${task.priority === 'High' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{task.priority}</span>
-                                                    </td>
-                                                    <td className="p-4">
-                                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${task.status === 'Completed' ? 'bg-blue-100 text-blue-800' : 'bg-gray-200 text-gray-800'}`}>{task.status}</span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        }
-                        {/* --- RENDER GEO STUDIO TAB CONTENT --- */}
-                        {activeTab === 'geoStudio' && <GeoStudioComponent />}
-                        {activeTab === 'billing' && 
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900">Billing & Services</h1>
-                                <p className="text-gray-500 mt-1">Manage your subscription and add-ons.</p>
-                                <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                    <div className="lg:col-span-1">
-                                        <div className="bg-white p-6 rounded-xl shadow-sm">
-                                            <h3 className="font-bold text-lg">Current Plan</h3>
-                                            <p className="mt-4 text-3xl font-bold text-indigo-600">{services.plan.name}</p>
-                                            <p className="text-gray-500"><span className="text-4xl font-bold text-gray-800">${services.plan.price}</span>/month</p>
-                                            <button className="mt-4 w-full border border-gray-300 py-2 rounded-lg font-semibold text-gray-700 hover:bg-gray-100">Manage Plan</button>
-                                        </div>
-                                    </div>
-                                    <div className="lg:col-span-2">
-                                        <h3 className="font-bold text-lg">Available Add-ons</h3>
-                                        <div className="mt-4 space-y-4">
-                                            {availableAddons.map(addon => {
-                                                const currentAddon = services.addons.find(a => a.name === addon.name);
-                                                const isActive = currentAddon && currentAddon.active;
-                                                return (
-                                                    <div key={addon.name} className="bg-white p-6 rounded-xl shadow-sm flex justify-between items-center">
-                                                        <div>
-                                                            <h4 className="font-semibold text-gray-800">{addon.name}</h4>
-                                                            <p className="text-sm text-gray-500">{addon.description}</p>
-                                                            <p className="font-bold mt-1">${addon.price}/month</p>
-                                                        </div>
-                                                        <button onClick={() => toggleAddon(addon.name)} className={`px-4 py-2 rounded-lg font-semibold text-sm ${isActive ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
-                                                            {isActive ? 'Deactivate' : 'Activate'}
-                                                        </button>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
+                         <div className="flex justify-end mb-4">
+                            <button onClick={() => setIsApiModalOpen(true)} className="p-2 rounded-full hover:bg-gray-200" title="API Key Settings">
+                                <Icon name="settings" className="text-gray-600" />
+                            </button>
+                        </div>
+                        {renderContent()}
                     </main>
                 </div>
             );
         };
-        
-        const CompanyDashboard = ({ setRoute }) => {
-            const [selectedClient, setSelectedClient] = useState(null);
+        const CompanyDashboard = ({ setRoute, viewClient }) => {
+            const [analyses, setAnalyses] = useState([]);
 
-            if (selectedClient) {
-                 const clientTasks = mockData.optimizationTasks[selectedClient.id] || [];
-                return (
-                    <div className="bg-gray-50 min-h-screen fade-in p-8">
-                        <button onClick={() => setSelectedClient(null)} className="mb-6 font-semibold text-indigo-600 hover:text-indigo-800">&larr; Back to Portfolio</button>
-                        <h1 className="text-4xl font-bold text-gray-900">{selectedClient.name} - Deep Dive</h1>
-                        <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="bg-white p-6 rounded-lg shadow-sm">
-                                <h3 className="font-semibold text-lg">Client Details</h3>
-                                <div className="mt-4 space-y-2 text-gray-700">
-                                    <p><strong>Account Manager:</strong> {selectedClient.manager}</p>
-                                    <p><strong>MRR:</strong> ${selectedClient.mrr.toLocaleString()}</p>
-                                    <p><strong>Contract Renewal:</strong> {new Date(selectedClient.contractRenewal).toLocaleDateString()}</p>
+            useEffect(() => {
+                const storedAnalyses = JSON.parse(localStorage.getItem('adsight_analyses')) || {};
+                const clients = Object.values(storedAnalyses).map(data => ({
+                    id: data.brandName,
+                    name: data.brandName.charAt(0).toUpperCase() + data.brandName.slice(1),
+                    url: data.url,
+                    score: data.panelData.completeness,
+                    health: data.panelData.completeness > 75 ? 'Healthy' : 'At Risk',
+                }));
+                setAnalyses(clients);
+            }, []);
+
+            const atRiskClients = analyses.filter(c => c.health === 'At Risk');
+            const avgScore = analyses.length > 0 ? Math.round(analyses.reduce((acc, c) => acc + c.score, 0) / analyses.length) : 0;
+
+            return (
+                <div className="bg-gray-100 min-h-screen">
+                    <aside className="w-64 bg-white p-6 border-r border-gray-200 flex flex-col fixed h-full">
+                        <div className="flex items-center gap-2 text-2xl font-bold text-gray-800">
+                             <a href="#" onClick={(e) => { e.preventDefault(); setRoute('home'); }} className="flex items-center gap-2"><Icon name="package" /> AdSight</a>
+                        </div>
+                        <nav className="mt-10 space-y-2">
+                             <a href="#" className={`flex items-center gap-3 px-4 py-2 font-semibold rounded-lg bg-indigo-50 text-indigo-700`}><Icon name="barChart" /> Portfolio</a>
+                        </nav>
+                         <div className="mt-auto p-4">
+                           <button onClick={() => setRoute('login')} className="w-full flex items-center justify-center gap-2 bg-gray-200 text-gray-700 text-sm font-bold py-2 rounded-lg hover:bg-gray-300">
+                                <Icon name="logOut" />
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </aside>
+                    <main className="ml-64 p-8">
+                        <h1 className="text-3xl font-bold text-gray-900">Company Portfolio</h1>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+                            <div className="bg-white p-6 rounded-xl border"><h3 className="text-sm font-medium text-gray-500">Total Clients Analyzed</h3><p className="text-3xl font-bold mt-2">{analyses.length}</p></div>
+                            <div className="bg-white p-6 rounded-xl border"><h3 className="text-sm font-medium text-gray-500">Average GEO Score</h3><p className="text-3xl font-bold mt-2">{avgScore}</p></div>
+                            <div className="bg-white p-6 rounded-xl border"><h3 className="text-sm font-medium text-gray-500">Clients At Risk</h3><p className="text-3xl font-bold mt-2 text-yellow-500">{atRiskClients.length}</p></div>
+                        </div>
+                        
+                        {atRiskClients.length > 0 && 
+                            <div className="mb-8">
+                                <h2 className="text-xl font-bold text-gray-800 mb-4">Critical Alerts</h2>
+                                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                                    {atRiskClients.map(c => <p key={c.id} className="text-sm text-yellow-800 mb-1"><strong>{c.name}</strong> has a low GEO score of {c.score}.</p>)}
                                 </div>
                             </div>
-                            <div className="bg-white p-6 rounded-lg shadow-sm">
-                                <h3 className="font-semibold text-lg">GAIO Score Trend</h3>
-                                 <ChartComponent type="line" data={{labels: ['Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets:[{label: 'Score', data: [60, 68, 75, 82, selectedClient.score], borderColor: '#4f46e5', tension: 0.4}]}} options={{responsive: true, maintainAspectRatio: false}} className="dashboard-chart" />
-                            </div>
-                        </div>
-                        <div className="mt-8 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 className="font-semibold text-lg mb-4">Active Workbench Tasks</h3>
+                        }
+
+                        <div className="bg-white rounded-lg shadow-sm border">
                             <table className="w-full text-left">
-                                 <thead className="border-b border-gray-200">
+                                <thead className="border-b">
                                     <tr>
-                                        <th className="p-4 text-sm font-semibold text-gray-500">Topic / Task</th>
-                                        <th className="p-4 text-sm font-semibold text-gray-500">Priority</th>
-                                        <th className="p-4 text-sm font-semibold text-gray-500">Status</th>
+                                        <th className="p-4 text-sm font-semibold text-gray-500">Client</th>
+                                        <th className="p-4 text-sm font-semibold text-gray-500">Health</th>
+                                        <th className="p-4 text-sm font-semibold text-gray-500">GEO Score</th>
+                                        <th className="p-4 text-sm font-semibold text-gray-500"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {clientTasks.length > 0 ? clientTasks.map(task => (
-                                        <tr key={task.id} className="border-b border-gray-200 hover:bg-gray-50">
-                                            <td className="p-4 font-medium text-gray-800">{task.topic}</td>
-                                            <td className="p-4">
-                                                <span className={`px-2 py-1 text-xs font-bold rounded-full ${task.priority === 'High' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{task.priority}</span>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${task.status === 'Completed' ? 'bg-blue-100 text-blue-800' : 'bg-gray-200 text-gray-800'}`}>{task.status}</span>
-                                            </td>
+                                    {analyses.length > 0 ? analyses.map(client => (
+                                        <tr key={client.id} className="border-b hover:bg-gray-50">
+                                            <td className="p-4 font-medium">{client.name}</td>
+                                            <td className="p-4"><span className={`px-2 py-1 text-xs font-bold rounded-full ${client.health === 'Healthy' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{client.health}</span></td>
+                                            <td className="p-4 font-bold">{client.score}</td>
+                                            <td className="p-4 text-right"><button onClick={() => viewClient(client)} className="text-sm font-semibold text-indigo-600 hover:underline">View Dashboard</button></td>
                                         </tr>
                                     )) : (
-                                        <tr><td colSpan="3" className="p-4 text-center text-gray-500">No active tasks for this client.</td></tr>
+                                        <tr><td colSpan="4" className="p-8 text-center text-gray-500">No client analyses have been run yet.</td></tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="flex bg-gray-50 min-h-screen fade-in">
-                    <aside className="w-20 bg-white p-4 border-r flex flex-col items-center">
-                        <a href="#" onClick={(e) => { e.preventDefault(); setRoute('home'); }} className="text-indigo-600"><Icon name="package" /></a>
-                    </aside>
-                    <main className="flex-1 p-8">
-                        <header className="mb-8 flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-900">Company Overview</h1></header>
-                        <div className="mb-8 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
-                            <h4 className="font-bold text-yellow-800">Critical Alerts</h4>
-                            <div className="mt-2 text-sm text-yellow-700">{mockData.clients.filter(c => c.health === 'At Risk').map(c => <p key={c.name}>- <strong>{c.name}:</strong> {c.alert}</p>)}</div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="bg-white p-5 rounded-lg shadow-sm"><div className="flex justify-between items-center"><h4 className="text-sm font-medium text-gray-500">MRR</h4><Icon name="dollarSign" className="text-gray-400"/></div><p className="text-2xl font-bold mt-2">$13,000</p><p className="text-xs mt-1 text-green-600">+5.2%</p></div>
-                            <div className="bg-white p-5 rounded-lg shadow-sm"><div className="flex justify-between items-center"><h4 className="text-sm font-medium text-gray-500">Active Clients</h4><Icon name="users" className="text-gray-400"/></div><p className="text-2xl font-bold mt-2">5</p><p className="text-xs mt-1 text-gray-500">since last month</p></div>
-                            <div className="bg-white p-5 rounded-lg shadow-sm"><div className="flex justify-between items-center"><h4 className="text-sm font-medium text-gray-500">Client Health</h4><Icon name="trendingUp" className="text-gray-400"/></div><p className="text-2xl font-bold mt-2">60%</p><p className="text-xs mt-1 text-red-600">-15%</p></div>
-                            <div className="bg-white p-5 rounded-lg shadow-sm"><div className="flex justify-between items-center"><h4 className="text-sm font-medium text-gray-500">Net Revenue Churn</h4><Icon name="dollarSign" className="text-gray-400"/></div><p className="text-2xl font-bold mt-2">0%</p><p className="text-xs mt-1 text-green-600">No churn</p></div>
-                        </div>
-                        <div className="mt-8 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 className="font-semibold text-lg mb-4">Client Portfolio</h3>
-                            <table className="w-full text-left">
-                                <thead className="border-b border-gray-200">
-                                    <tr>
-                                        <th className="p-3 text-xs font-semibold text-gray-500">CLIENT</th>
-                                        <th className="p-3 text-xs font-semibold text-gray-500">HEALTH</th>
-                                        <th className="p-3 text-xs font-semibold text-gray-500">MRR</th>
-                                        <th className="p-3 text-xs font-semibold text-gray-500">AI SCORE</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {mockData.clients.map(client => (
-                                        <tr key={client.id} onClick={() => setSelectedClient(client)} className="border-b border-gray-100 hover:bg-indigo-50 cursor-pointer">
-                                            <td className="p-3 font-medium text-gray-800">{client.name}</td>
-                                            <td className="p-3"><span className={`px-2 py-1 text-xs font-medium rounded-full ${client.health === 'Healthy' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{client.health}</span></td>
-                                            <td className="p-3 text-gray-600">${client.mrr.toLocaleString()}</td>
-                                            <td className="p-3 font-bold text-gray-800">{client.score}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
                     </main>
                 </div>
-            );
+            )
         };
         
-        // --- MAIN APP ROUTER with ANIMATIONS ---
+        // --- App Router ---
         const App = () => {
-            const [currentRoute, setCurrentRoute] = useState('home');
-            const [displayRoute, setDisplayRoute] = useState('home');
-            const [isAnimating, setIsAnimating] = useState(false);
+            const [route, setRoute] = useState('home');
+            const [clientToView, setClientToView] = useState(null);
 
-            const setRoute = (newRoute) => {
-                if (newRoute !== currentRoute) {
-                    setIsAnimating(true);
-                    setTimeout(() => {
-                        setCurrentRoute(newRoute);
-                        setDisplayRoute(newRoute);
-                        setIsAnimating(false);
-                        window.scrollTo(0, 0);
-                    }, 300);
-                }
-            };
-
-            const Layout = ({children}) => ( <div><Header setRoute={setRoute} />{children}<Footer setRoute={setRoute} /></div> );
-            
-            const renderRoute = () => {
-                switch (displayRoute) {
-                    case 'home': return <Layout><HomePage setRoute={setRoute} /></Layout>;
-                    case 'solutions': return <Layout><SolutionsPage setRoute={setRoute} /></Layout>;
-                    case 'about': return <Layout><AboutUsPage /></Layout>;
-                    case 'pricing': return <Layout><PricingPage setRoute={setRoute} /></Layout>;
-                    case 'blog': return <Layout><BlogPage /></Layout>;
-                    case 'bookDemo': return <Layout><BookDemoPage setRoute={setRoute} /></Layout>;
-                    case 'login': return <LoginPage setRoute={setRoute} />;
-                    case 'signUp': return <SignUpPage setRoute={setRoute} />;
-                    case 'clientDashboard': return <ClientDashboard setRoute={setRoute} />;
-                    case 'companyDashboard': return <CompanyDashboard setRoute={setRoute} />;
-                    default: return <Layout><HomePage setRoute={setRoute} /></Layout>;
-                }
+            const navigate = (newRoute, data = null) => {
+                if(data) setClientToView(data);
+                setRoute(newRoute);
             };
             
-            return <div className={isAnimating ? 'fade-out' : 'fade-in'}>{renderRoute()}</div>;
+            const FullLayout = ({children}) => (
+                <div>
+                    <Header setRoute={navigate} />
+                    {children}
+                    <Footer setRoute={navigate} />
+                </div>
+            );
+
+            if (route === 'login') return <LoginPage setRoute={navigate} />;
+            if (route === 'clientDashboard') return <ClientDashboard setRoute={navigate} clientToView={clientToView} backToCompanyDash={() => navigate('companyDashboard')} />;
+            if (route === 'companyDashboard') return <CompanyDashboard setRoute={navigate} viewClient={(client) => navigate('clientDashboard', client)} />;
+
+            const marketingPages = {
+                home: <HomePage setRoute={navigate}/>,
+                solutions: <SolutionsPage setRoute={navigate}/>,
+                about: <AboutUsPage />,
+                blog: <BlogPage />,
+                pricing: <PricingPage setRoute={navigate} />,
+                bookDemo: <BookDemoPage setRoute={navigate} />,
+                signUp: <SignUpPage setRoute={navigate} />
+            };
+
+            return <FullLayout>{marketingPages[route] || <HomePage setRoute={navigate} />}</FullLayout>;
         };
 
         ReactDOM.render(<App />, document.getElementById('root'));
