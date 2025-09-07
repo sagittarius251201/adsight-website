@@ -14,24 +14,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; color: #111827; scroll-behavior: smooth; }
         .dashboard-chart { position: relative; height: 300px; width: 100%; }
         .gradient-text { background: -webkit-linear-gradient(45deg, #4f46e5, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* --- Animation Keyframes --- */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- Animation Utility Classes --- */
         .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
         .loader {
             border: 4px solid #e5e7eb; border-top: 4px solid #4f46e5;
             border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite;
         }
         
-        /* --- Page Transition Classes --- */
         .page-container {
             animation-duration: 0.4s;
             animation-timing-function: ease-in-out;
@@ -40,10 +38,8 @@
         .page-fade-in { animation-name: fadeIn; }
         .page-fade-out { animation-name: fadeOut; }
         
-        /* --- General Element Transitions --- */
         a, button { transition: all 0.2s ease-in-out; }
 
-        /* --- Scroll Animations --- */
         .scroll-animate {
             opacity: 0;
             transform: translateY(20px);
@@ -54,7 +50,6 @@
             transform: translateY(0);
         }
 
-        /* Styles for Content Studio */
         .geo-studio-container {
             --bg-primary: #F9FAFB; --bg-secondary: #FFFFFF; --border-color: #E5E7EB;
             --text-primary: #111827; --text-secondary: #6B7280; --accent-primary: #4F46E5; --accent-hover: #4338CA;
@@ -117,6 +112,9 @@
                 check: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
                 settings: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
                 logOut: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+                dollarSign: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
+                menu: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>,
+                close: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
             };
             return <div className={`w-6 h-6 ${className}`}>{icons[name]}</div>;
         };
@@ -160,33 +158,69 @@
         };
         
         // --- WEBSITE COMPONENTS ---
-        const Header = ({ setRoute }) => (
-            <header className="bg-white/90 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200">
-                <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-                    <a href="#" onClick={(e) => { e.preventDefault(); setRoute('home'); }} className="flex items-center gap-2.5">
-                        <img src="./assets/adsight_logo.jpeg" alt="AdSight Logo" className="h-20 w-auto" />
-                    </a>
-                    <div className="hidden md:flex items-center gap-x-8 lg:gap-x-10">
-                        <a href="#" onClick={(e) => { e.preventDefault(); setRoute('solutions'); }} className="text-gray-600 hover:text-indigo-600 font-medium text-sm">Why AdSight?</a>
-                        <a href="#" onClick={(e) => { e.preventDefault(); setRoute('about'); }} className="text-gray-600 hover:text-indigo-600 font-medium text-sm">Company</a>
-                        <a href="#" onClick={(e) => { e.preventDefault(); setRoute('blog'); }} className="text-gray-600 hover:text-indigo-600 font-medium text-sm">Blog</a>
-                    </div>
-                    <div className="hidden md:flex items-center space-x-4">
-                         <a href="#" onClick={(e) => { e.preventDefault(); setRoute('login'); }} className="text-sm font-semibold text-gray-700 hover:text-indigo-600">Client Login</a>
-                         <a href="#" onClick={(e) => { e.preventDefault(); setRoute('bookDemo'); }} className="bg-indigo-600 text-white px-5 py-2.5 rounded-md hover:bg-indigo-700 transition-colors text-sm font-semibold shadow-sm">
-                            Book a Demo
+        const Header = ({ setRoute }) => {
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            
+            const NavLink = ({ route, children }) => (
+                 <a href="#" onClick={(e) => { e.preventDefault(); setRoute(route); setIsMenuOpen(false); }} className="block md:inline-block py-2 text-gray-600 hover:text-indigo-600 font-medium text-sm">
+                    {children}
+                </a>
+            );
+
+            return (
+                <header className="bg-white/90 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200">
+                    <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
+                        <a href="#" onClick={(e) => { e.preventDefault(); setRoute('home'); }} className="flex items-center gap-2.5">
+                            <img src="./assets/adsight_logo.jpeg" alt="AdSight Logo" className="h-16 md:h-20 w-auto" />
                         </a>
-                    </div>
-                </nav>
-            </header>
-        );
+                        
+                        {/* Desktop Nav */}
+                        <div className="hidden md:flex items-center gap-x-8 lg:gap-x-10">
+                            <NavLink route="solutions">Why AdSight?</NavLink>
+                            <NavLink route="about">Company</NavLink>
+                            <NavLink route="blog">Blog</NavLink>
+                        </div>
+                        <div className="hidden md:flex items-center space-x-4">
+                            <a href="#" onClick={(e) => { e.preventDefault(); setRoute('login'); }} className="text-sm font-semibold text-gray-700 hover:text-indigo-600">Client Login</a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setRoute('bookDemo'); }} className="bg-indigo-600 text-white px-5 py-2.5 rounded-md hover:bg-indigo-700 transition-colors text-sm font-semibold shadow-sm">
+                                Book a Demo
+                            </a>
+                        </div>
+                        
+                        {/* Mobile Nav Toggle */}
+                        <div className="md:hidden">
+                            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-700">
+                                <Icon name={isMenuOpen ? "close" : "menu"} />
+                            </button>
+                        </div>
+                    </nav>
+
+                    {/* Mobile Menu */}
+                    {isMenuOpen && (
+                        <div className="md:hidden bg-white/95 backdrop-blur-lg absolute top-full left-0 w-full border-t border-gray-200">
+                           <div className="container mx-auto px-6 py-4 flex flex-col items-center space-y-4">
+                                <NavLink route="solutions">Why AdSight?</NavLink>
+                                <NavLink route="about">Company</NavLink>
+                                <NavLink route="blog">Blog</NavLink>
+                                <hr className="w-full border-gray-200" />
+                                <a href="#" onClick={(e) => { e.preventDefault(); setRoute('login'); setIsMenuOpen(false); }} className="text-sm font-semibold text-gray-700 hover:text-indigo-600">Client Login</a>
+                                <a href="#" onClick={(e) => { e.preventDefault(); setRoute('bookDemo'); setIsMenuOpen(false); }} className="w-full text-center bg-indigo-600 text-white px-5 py-2.5 rounded-md hover:bg-indigo-700 transition-colors text-sm font-semibold shadow-sm">
+                                    Book a Demo
+                                </a>
+                           </div>
+                        </div>
+                    )}
+                </header>
+            );
+        };
+
 
         const Footer = ({ setRoute }) => (
              <footer className="bg-white border-t border-gray-200">
                 <div className="container mx-auto px-6 lg:px-8 py-16">
-                     <div className="grid grid-cols-2 md:grid-cols-5 gap-12">
+                     <div className="grid grid-cols-2 md:grid-cols-5 gap-y-12 gap-x-8">
                         <div className="col-span-2 md:col-span-1">
-                            <img src="./assets/adsight_logo.jpeg" alt="AdSight Logo" className="h-20 w-auto" />
+                            <img src="./assets/adsight_logo.jpeg" alt="AdSight Logo" className="h-16 w-auto" />
                             <p className="mt-4 text-gray-500 text-sm">The Future of Digital Visibility.</p>
                         </div>
                         <div>
@@ -212,10 +246,18 @@
                         </div>
                          <div>
                             <h4 className="font-semibold text-gray-800 tracking-wide">Social</h4>
+                            <div className="flex items-center space-x-4 mt-4">
+                                <a href="https://www.linkedin.com/company/ad-sight/" target="_blank" className="text-gray-500 hover:text-blue-700">
+                                    <i className="fa-brands fa-linkedin text-xl"></i>
+                                </a>
+                                <a href="https://www.instagram.com/adsight.solutions/" target="_blank" className="text-gray-500 hover:text-pink-500">
+                                    <i className="fa-brands fa-instagram text-xl"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div className="mt-16 border-t border-gray-200 pt-8 text-center text-sm text-gray-500">
-                        <p>&copy; {new Date().getFullYear()} AdSight Technologies, Inc. All rights reserved.</p>
+                        <p>&copy; {new Date().getFullYear()} AdSight Solutions | Dubai, UAE</p>
                     </div>
                 </div>
             </footer>
@@ -224,10 +266,10 @@
         const HomePage = ({ setRoute }) => {
             useScrollAnimation();
             const llms = [
-                { name: 'ChatGPT', logo: <img src="./assets/chatgpt-icon.png" alt="ChatGPT" className="h-12 w-12" /> },
-                { name: 'Gemini', logo: <img src="./assets/google-gemini-icon.png" alt="Gemini" className="h-12 w-12" /> },
-                { name: 'Perplexity', logo: <img src="./assets/perplexity-ai-icon.png" alt="Perplexity" className="h-12 w-12" /> },
-                { name: 'Claude', logo: <img src="./assets/claude-ai-icon.png" alt="Claude" className="h-12 w-12" /> },
+                { name: 'ChatGPT', logo: <img src="./assets/chatgpt-icon.png" alt="ChatGPT" className="h-10 sm:h-12 w-auto" /> },
+                { name: 'Gemini', logo: <img src="./assets/google-gemini-icon.png" alt="Gemini" className="h-10 sm:h-12 w-auto" /> },
+                { name: 'Perplexity', logo: <img src="./assets/perplexity-ai-icon.png" alt="Perplexity" className="h-10 sm:h-12 w-auto" /> },
+                { name: 'Claude', logo: <img src="./assets/claude-ai-icon.png" alt="Claude" className="h-10 sm:h-12 w-auto" /> },
             ];
             const [currentLlm, setCurrentLlm] = useState(0);
 
@@ -247,10 +289,10 @@
                         </svg>
                         <div className="container mx-auto px-6 py-24 sm:py-32 lg:py-40">
                            <div className="max-w-4xl mx-auto text-center">
-                                <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-tight">
+                                <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-tight">
                                     Stop Competing on Search. <br/> <span className="gradient-text">Start Winning in AI.</span>
                                 </h1>
-                                <p className="mt-6 text-lg max-w-3xl mx-auto leading-8 text-gray-600">
+                                <p className="mt-6 text-base sm:text-lg max-w-3xl mx-auto leading-8 text-gray-600">
                                     AdSight is the first Generative AI Optimization (GAIO) platform built to make your brand the definitive answer when customers ask AI.
                                 </p>
                                 <div className="mt-10">
@@ -264,14 +306,14 @@
                     
                     <section className="bg-gray-50 py-24 sm:py-32">
                         <div className="container mx-auto px-6 lg:px-8 text-center scroll-animate">
-                            <h2 className="text-xl font-semibold tracking-tight text-gray-800 sm:text-2xl">
+                            <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-gray-800 sm:text-2xl">
                                 Ensure Your Brand is Recommended by
                             </h2>
                             <div className="mt-10 h-16 flex justify-center items-center gap-6 overflow-hidden relative">
                                 {llms.map((llm, index) => (
                                      <div key={llm.name} className={`llm-logo-container absolute flex items-center gap-4 ${index === currentLlm ? 'opacity-100' : 'opacity-0'}`}>
                                         {llm.logo}
-                                        <span className="text-3xl font-bold text-gray-800">{llm.name}</span>
+                                        <span className="text-2xl sm:text-3xl font-bold text-gray-800">{llm.name}</span>
                                     </div>
                                 ))}
                             </div>
@@ -282,20 +324,20 @@
                         <div className="container mx-auto px-6 lg:px-8">
                             <div className="text-center max-w-3xl mx-auto scroll-animate">
                                 <h2 className="text-base font-semibold leading-7 text-indigo-600">The AdSight Method</h2>
-                                <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Your Path to AI Authority</p>
+                                <p className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Your Path to AI Authority</p>
                             </div>
                              <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-16 text-center">
-                                <div className="p-8 scroll-animate">
+                                <div className="p-4 sm:p-8 scroll-animate">
                                     <div className="inline-block bg-indigo-100 text-indigo-600 p-5 rounded-full text-3xl font-bold">1</div>
                                     <h3 className="mt-6 text-xl font-bold text-gray-900">Track</h3>
                                     <p className="mt-4 text-gray-600 leading-relaxed">Continuously monitor your brand's visibility and sentiment across all major AI answer engines.</p>
                                 </div>
-                                <div className="p-8 scroll-animate" style={{transitionDelay: '200ms'}}>
+                                <div className="p-4 sm:p-8 scroll-animate" style={{transitionDelay: '200ms'}}>
                                     <div className="inline-block bg-indigo-100 text-indigo-600 p-5 rounded-full text-3xl font-bold">2</div>
                                     <h3 className="mt-6 text-xl font-bold text-gray-900">Understand</h3>
                                     <p className="mt-4 text-gray-600 leading-relaxed">Benchmark against competitors and use our AI to analyze why they get mentioned over you.</p>
                                 </div>
-                                 <div className="p-8 scroll-animate" style={{transitionDelay: '400ms'}}>
+                                 <div className="p-4 sm:p-8 scroll-animate" style={{transitionDelay: '400ms'}}>
                                     <div className="inline-block bg-indigo-100 text-indigo-600 p-5 rounded-full text-3xl font-bold">3</div>
                                     <h3 className="mt-6 text-xl font-bold text-gray-900">Optimize</h3>
                                     <p className="mt-4 text-gray-600 leading-relaxed">Use our Workbench to action data-driven tasks that make your content the most authoritative source for LLMs.</p>
@@ -314,16 +356,16 @@
                 <div className="container mx-auto px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto scroll-animate">
                         <h1 className="text-base font-semibold leading-7 text-indigo-600">Why AdSight?</h1>
-                        <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Go Beyond Visibility. Achieve Authority.</p>
+                        <p className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Go Beyond Visibility. Achieve Authority.</p>
                         <p className="mt-6 text-lg leading-8 text-gray-600">
                             Traditional analytics tools show you what happened. AdSight shows you why it happened and what to do next. We provide a complete, actionable framework to make your brand the most trusted and citable source for AI engines.
                         </p>
                     </div>
                     
-                    <div className="mt-24 space-y-28">
+                    <div className="mt-24 space-y-20 md:space-y-28">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-12 items-center scroll-animate">
                             <div>
-                                <h2 className="text-3xl font-bold tracking-tight text-gray-900">Track: The Complete Picture of Your AI Presence</h2>
+                                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Track: The Complete Picture of Your AI Presence</h2>
                                 <p className="mt-6 text-gray-600 leading-8">Continuously monitor your brand's share of voice, sentiment, and accuracy across every major LLM. Get real-time alerts on critical changes before they impact your reputation.</p>
                                 <ul className="mt-8 space-y-4 text-gray-700">
                                     <li className="flex items-center gap-3"><Icon name="check" className="text-indigo-600 w-5 h-5 flex-shrink-0"/><span>Real-time Mention Tracking</span></li>
@@ -331,7 +373,7 @@
                                     <li className="flex items-center gap-3"><Icon name="check" className="text-indigo-600 w-5 h-5 flex-shrink-0"/><span>Factual Accuracy Audits</span></li>
                                 </ul>
                             </div>
-                           <div className="bg-gray-50 p-8 rounded-xl shadow-md hover:shadow-2xl transition-shadow duration-300">
+                           <div className="bg-gray-50 p-6 sm:p-8 rounded-xl shadow-md hover:shadow-2xl transition-shadow duration-300">
                                 <div className="bg-white rounded-lg p-6 space-y-4 shadow-inner">
                                     <div className="flex justify-between items-center">
                                         <h4 className="font-semibold text-gray-800">AI Visibility Score</h4>
@@ -348,7 +390,7 @@
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-12 items-center scroll-animate">
-                             <div className="bg-gray-50 p-8 rounded-xl shadow-md order-last lg:order-first hover:shadow-2xl transition-shadow duration-300">
+                             <div className="bg-gray-50 p-6 sm:p-8 rounded-xl shadow-md order-last lg:order-first hover:shadow-2xl transition-shadow duration-300">
                                  <div className="bg-white rounded-lg p-6 space-y-4 shadow-inner">
                                     <h4 className="font-semibold text-gray-800">Content Gap Analysis</h4>
                                     <div className="p-4 bg-red-50 rounded-lg border-l-4 border-red-400">
@@ -360,17 +402,17 @@
                                  </div>
                             </div>
                             <div>
-                                <h2 className="text-3xl font-bold tracking-tight text-gray-900">Understand: AI-Powered Gap Analysis</h2>
+                                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Understand: AI-Powered Gap Analysis</h2>
                                 <p className="mt-6 text-gray-600 leading-8">Our platform doesn't just show you data; it provides understanding. AdSight's AI analyzes LLM answers to identify the specific content gaps, factual inaccuracies, or authority deficits that are holding you back.</p>
                             </div>
                         </div>
 
                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-12 items-center scroll-animate">
                             <div>
-                                <h2 className="text-3xl font-bold tracking-tight text-gray-900">Optimize: Your Actionable Workbench</h2>
+                                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Optimize: Your Actionable Workbench</h2>
                                 <p className="mt-6 text-gray-600 leading-8">Turn insights into action. The AdSight Workbench generates a prioritized list of data-driven tasks—from updating a statistic on a blog post to creating a new, authoritative case study—to systematically improve your GAIO performance.</p>
                             </div>
-                             <div className="bg-gray-50 p-8 rounded-xl shadow-md hover:shadow-2xl transition-shadow duration-300">
+                             <div className="bg-gray-50 p-6 sm:p-8 rounded-xl shadow-md hover:shadow-2xl transition-shadow duration-300">
                                 <div className="bg-white rounded-lg p-6 space-y-4 shadow-inner">
                                     <h4 className="font-semibold text-gray-800">Action Items</h4>
                                      <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -398,31 +440,31 @@
                         <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">We're Building the Future of Search</h1>
                         <p className="mt-6 text-lg text-gray-600 leading-8">AdSight was founded by a team of SEO veterans and AI researchers who saw the paradigm shift coming. Our mission is to empower brands to thrive in the new era of AI-driven discovery.</p>
                     </div>
-                    <div className="mt-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-16">
+                    <div className="mt-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-12 md:gap-y-16">
                         <div className="text-center scroll-animate">
-                            <img className="w-32 h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AnirudhSherman" alt="Anirudh Sherman"/>
-                            <h4 className="mt-6 text-lg font-bold">Anirudh Sherman</h4>
-                            <p className="text-indigo-600">Co-Founder & CEO</p>
+                            <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AnirudhSherman" alt="Anirudh Sherman"/>
+                            <h4 className="mt-6 text-base sm:text-lg font-bold">Anirudh Sherman</h4>
+                            <p className="text-indigo-600 text-sm">Co-Founder & CEO</p>
                         </div>
                         <div className="text-center scroll-animate" style={{transitionDelay: '100ms'}}>
-                             <img className="w-32 h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=RohitH" alt="Rohit Harikrishnan"/>
-                            <h4 className="mt-6 text-lg font-bold">Rohit Harikrishnan</h4>
-                            <p className="text-indigo-600">Co-Founder & CTO</p>
+                             <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=RohitH" alt="Rohit Harikrishnan"/>
+                            <h4 className="mt-6 text-base sm:text-lg font-bold">Rohit Harikrishnan</h4>
+                            <p className="text-indigo-600 text-sm">Co-Founder & CTO</p>
                         </div>
                         <div className="text-center scroll-animate" style={{transitionDelay: '200ms'}}>
-                            <img className="w-32 h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/girl?username=KashishSethia" alt="Kashish Sethia"/>
-                            <h4 className="mt-6 text-lg font-bold">Kashish Sethia</h4>
-                            <p className="text-indigo-600">Head of AI Research</p>
+                            <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/girl?username=KashishSethia" alt="Kashish Sethia"/>
+                            <h4 className="mt-6 text-base sm:text-lg font-bold">Kashish Sethia</h4>
+                            <p className="text-indigo-600 text-sm">Head of AI Research</p>
                         </div>
                         <div className="text-center scroll-animate" style={{transitionDelay: '300ms'}}>
-                            <img className="w-32 h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AbhayS" alt="Abhay Singh"/>
-                            <h4 className="mt-6 text-lg font-bold">Abhay Singh</h4>
-                            <p className="text-indigo-600">Head of Product</p>
+                            <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AbhayS" alt="Abhay Singh"/>
+                            <h4 className="mt-6 text-base sm:text-lg font-bold">Abhay Singh</h4>
+                            <p className="text-indigo-600 text-sm">Head of Product</p>
                         </div>
                          <div className="text-center scroll-animate" style={{transitionDelay: '400ms'}}>
-                            <img className="w-32 h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AnirudhA" alt="Anirudh Agarwal"/>
-                            <h4 className="mt-6 text-lg font-bold">Anirudh Agarwal</h4>
-                            <p className="text-indigo-600">Head of Strategy</p>
+                            <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AnirudhA" alt="Anirudh Agarwal"/>
+                            <h4 className="mt-6 text-base sm:text-lg font-bold">Anirudh Agarwal</h4>
+                            <p className="text-indigo-600 text-sm">Head of Strategy</p>
                         </div>
                     </div>
                 </div>
@@ -516,11 +558,11 @@
             };
 
             return (
-                <div className="flex min-h-screen flex-col justify-center bg-gray-100 py-12">
+                <div className="flex min-h-screen flex-col justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
                     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl mx-auto">
                         <div className="text-center">
                             <a href="#" onClick={e => { e.preventDefault(); setRoute('home')}}>
-                                <img src="./assets/adsight_logo.jpeg" alt="AdSight Logo" className="h-24 w-auto mx-auto" />
+                                <img src="./assets/adsight_logo.jpeg" alt="AdSight Logo" className="h-20 sm:h-24 w-auto mx-auto" />
                             </a>
                             <h1 className="text-3xl font-bold mt-4">Welcome Back</h1>
                             <p className="text-gray-500 mt-2">Sign in to access your AdSight dashboard.</p>
@@ -551,7 +593,7 @@
             };
 
             return (
-                <div className="flex min-h-screen flex-col justify-center bg-gray-100 py-12">
+                <div className="flex min-h-screen flex-col justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
                     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl mx-auto">
                         {submitted ? (
                             <div className="text-center py-12">
@@ -563,7 +605,7 @@
                             <div>
                                 <div className="text-center">
                                     <a href="#" onClick={e => { e.preventDefault(); setRoute('home')}}>
-                                        <img src="./assets/adsight_logo.jpeg" alt="AdSight Logo" className="h-24 w-auto mx-auto" />
+                                        <img src="./assets/adsight_logo.jpeg" alt="AdSight Logo" className="h-20 sm:h-24 w-auto mx-auto" />
                                     </a>
                                     <h1 className="text-3xl font-bold mt-4">Create Your Account</h1>
                                     <p className="text-gray-500 mt-2">Start your journey to AI authority.</p>
