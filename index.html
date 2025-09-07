@@ -491,7 +491,7 @@
             const handleLogin = (e) => {
                 e.preventDefault();
                 setError('');
-                if (email === 'client@adsight.com' && password === 'password123') {
+                if ((email === 'client@adsight.com' || email === 'mermaid@adsight.com') && password === 'password123') {
                     setRoute('clientDashboard');
                 } else if (email === 'admin@adsight.com' && password === 'password123') {
                     setRoute('companyDashboard');
@@ -1276,4 +1276,5 @@
     </script>
 </body>
 </html>
+
 
