@@ -41,7 +41,7 @@
         .page-fade-out { animation-name: fadeOut; }
         
         /* --- General Element Transitions --- */
-        a { transition: color 0.2s ease-in-out; }
+        a, button { transition: all 0.2s ease-in-out; }
 
         /* Styles for Content Studio */
         .geo-studio-container {
@@ -210,18 +210,24 @@
 
             return (
                 <div>
-                    <main className="bg-white">
-                        <div className="container mx-auto px-6 text-center py-24 sm:py-32">
-                            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-tight">
-                                Stop Competing on Search. <br/> <span className="gradient-text">Start Winning in AI.</span>
-                            </h1>
-                            <p className="mt-6 text-lg max-w-3xl mx-auto leading-8 text-gray-600">
-                                AdSight is the first Generative AI Optimization (GAIO) platform built to make your brand the definitive answer when customers ask AI.
-                            </p>
-                            <div className="mt-10">
-                                <a href="#" onClick={(e) => { e.preventDefault(); setRoute('bookDemo'); }} className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-base font-semibold shadow-lg hover:bg-indigo-700 transform hover:scale-105 transition-transform duration-300">
-                                    Request Your Free Demo
-                                </a>
+                    <main className="relative isolate overflow-hidden bg-white">
+                        <svg className="absolute inset-0 -z-10 h-full w-full stroke-gray-200 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]" aria-hidden="true">
+                            <defs><pattern id="0787a7c5-978c-4f66-83c7-11c213f99cb7" width="200" height="200" x="50%" y="-1" patternUnits="userSpaceOnUse"><path d="M.5 200V.5H200" fill="none" /></pattern></defs>
+                            <rect width="100%" height="100%" strokeWidth="0" fill="url(#0787a7c5-978c-4f66-83c7-11c213f99cb7)" />
+                        </svg>
+                        <div className="container mx-auto px-6 py-24 sm:py-32 lg:py-40">
+                           <div className="max-w-4xl mx-auto text-center">
+                                <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-tight">
+                                    Stop Competing on Search. <br/> <span className="gradient-text">Start Winning in AI.</span>
+                                </h1>
+                                <p className="mt-6 text-lg max-w-3xl mx-auto leading-8 text-gray-600">
+                                    AdSight is the first Generative AI Optimization (GAIO) platform built to make your brand the definitive answer when customers ask AI.
+                                </p>
+                                <div className="mt-10">
+                                    <a href="#" onClick={(e) => { e.preventDefault(); setRoute('bookDemo'); }} className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-base font-semibold shadow-lg hover:bg-indigo-700 transform hover:scale-105 transition-transform duration-300">
+                                        Request Your Free Demo
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </main>
@@ -380,7 +386,7 @@
                             <p className="text-indigo-600">Head of Product</p>
                         </div>
                          <div className="text-center">
-                            <img className="w-32 h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AnirudhAgarwal" alt="Anirudh Agarwal"/>
+                            <img className="w-32 h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/girl?username=AnirudhAgarwal" alt="Anirudh Agarwal"/>
                             <h4 className="mt-6 text-lg font-bold">Anirudh Agarwal</h4>
                             <p className="text-indigo-600">Head of Strategy</p>
                         </div>
