@@ -431,45 +431,46 @@
             </div>
         )};
 
-        const AboutUsPage = () => {
-            useScrollAnimation();
-            return (
+        const AboutUsPage = () => (
             <div className="bg-white py-24 sm:py-32">
-                <div className="container mx-auto px-6 lg:px-8 text-center">
-                    <div className="max-w-4xl mx-auto scroll-animate">
-                        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">We're Building the Future of Search</h1>
-                        <p className="mt-6 text-lg text-gray-600 leading-8">AdSight was founded by a team of SEO veterans and AI researchers who saw the paradigm shift coming. Our mission is to empower brands to thrive in the new era of AI-driven discovery.</p>
+                <div className="container mx-auto px-6 lg:px-8">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <p className="text-base font-semibold leading-7 text-indigo-600">Our Mission</p>
+                        <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">Pioneering Generative Engine Optimization</h1>
+                        <p className="mt-6 text-lg leading-8 text-gray-600">Founded in the dynamic hub of Dubai, our agency emerged from a shared vision to revolutionize how brands connect with consumers in the AI era. We are at the forefront of helping brands achieve unparalleled visibility within AI-driven answer engines.</p>
                     </div>
-                    <div className="mt-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-12 md:gap-y-16">
-                        <div className="text-center scroll-animate">
-                            <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AnirudhSherman" alt="Anirudh Sherman"/>
-                            <h4 className="mt-6 text-base sm:text-lg font-bold">Anirudh Sherman</h4>
-                            <p className="text-indigo-600 text-sm">Co-Founder & CEO</p>
-                        </div>
-                        <div className="text-center scroll-animate" style={{transitionDelay: '100ms'}}>
-                             <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=RohitH" alt="Rohit Harikrishnan"/>
-                            <h4 className="mt-6 text-base sm:text-lg font-bold">Rohit Harikrishnan</h4>
-                            <p className="text-indigo-600 text-sm">Co-Founder & CTO</p>
-                        </div>
-                        <div className="text-center scroll-animate" style={{transitionDelay: '200ms'}}>
-                            <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/girl?username=KashishSethia" alt="Kashish Sethia"/>
-                            <h4 className="mt-6 text-base sm:text-lg font-bold">Kashish Sethia</h4>
-                            <p className="text-indigo-600 text-sm">Head of AI Research</p>
-                        </div>
-                        <div className="text-center scroll-animate" style={{transitionDelay: '300ms'}}>
-                            <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AbhayS" alt="Abhay Singh"/>
-                            <h4 className="mt-6 text-base sm:text-lg font-bold">Abhay Singh</h4>
-                            <p className="text-indigo-600 text-sm">Head of Product</p>
-                        </div>
-                         <div className="text-center scroll-animate" style={{transitionDelay: '400ms'}}>
-                            <img className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto bg-gray-200 object-cover" src="https://avatar.iran.liara.run/public/boy?username=AnirudhA" alt="Anirudh Agarwal"/>
-                            <h4 className="mt-6 text-base sm:text-lg font-bold">Anirudh Agarwal</h4>
-                            <p className="text-indigo-600 text-sm">Head of Strategy</p>
+                    <div className="mt-20">
+                        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">Meet the Founders</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                            <div className="space-y-4">
+                                <img className="w-40 h-40 rounded-full mx-auto object-cover" src="./assets/Anirudh Sherman.jpg" alt="Anirudh Sherman"/>
+                                <div>
+                                    <h3 className="text-xl font-bold">Anirudh Sherman</h3>
+                                    <p className="text-indigo-600 font-semibold">Co-Founder</p>
+                                    <p className="mt-2 text-sm text-gray-600">With a strong background in finance, Anirudh ideated the foundational business model, recognizing the seismic shift AI would bring to search and discovery.</p>
+                                </div>
+                            </div>
+                             <div className="space-y-4">
+                                <img className="w-40 h-40 rounded-full mx-auto object-cover" src="./assets/Rohith Harikrishnan.jpg" alt="Rohith Harikrishnan"/>
+                                <div>
+                                    <h3 className="text-xl font-bold">Rohith Harikrishnan</h3>
+                                    <p className="text-indigo-600 font-semibold">Co-Founder</p>
+                                    <p className="mt-2 text-sm text-gray-600">A computer science engineer and marketing veteran from Dentsu, Rohith combines technical acumen with brand strategy and market positioning expertise.</p>
+                                </div>
+                            </div>
+                             <div className="space-y-4">
+                                <img className="w-40 h-40 rounded-full mx-auto object-cover" src="./assets/Anirudh Agarwal.jpg" alt="Anirudh Agarwal"/>
+                                <div>
+                                    <h3 className="text-xl font-bold">Anirudh Agarwal</h3>
+                                    <p className="text-indigo-600 font-semibold">Co-Founder</p>
+                                    <p className="mt-2 text-sm text-gray-600">An engineering prodigy from NIT Surathkal, Anirudh merges marketing and technology by building the robust technical infrastructure that powers our GEO solutions.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        )};
+        );
 
         const BlogPage = () => {
             useScrollAnimation();
